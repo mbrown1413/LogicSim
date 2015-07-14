@@ -71,7 +71,20 @@ class Component(logic.Entity):
         return self.terminals[name]
 
     def add_terminal(self, name, pos, net=None, output="float"):
-        self.terminals[name] = Terminal(self, name, pos, output=output)
+
+        # Make unique name
+        #TODO: No idea if this actually works
+        orig_name = name
+        i = 0
+        i_str = ""
+        while name in self.terminals:
+            name = "{}{}".format(orig_name, i_str)
+            i += 1
+            i_str = str(i)
+
+        t = Terminal(self, name, pos, output=output)
+        self.terminals[name] = t
+        return t
 
     def get_output_dict(self):
         return {name: term.output for name, term in self.terminals.iteritems()}
@@ -185,12 +198,15 @@ class TransistorEntity(Component):
 class SimpleTextComponent(Component):
     text = None  # Must be overwritten by subclass
     term_name = "term"
+    term_pos = "bot"
 
     def __init__(self, *args, **kwargs):
         super(SimpleTextComponent, self).__init__(*args, **kwargs)
         if self.text is None:
             raise RuntimeError('Subclasses must overwrite "term" variable')
-        self.add_terminal(self.term_name, (0, 3))
+        pos = {"bot": (0, 0), "top": (0, -10)}[self.term_pos]
+        print self, pos
+        self.add_terminal(self.term_name, pos)
         self.term = self.terminals[self.term_name]
         self.reset()
 
@@ -238,6 +254,7 @@ class VddComponent(SimpleTextComponent):
 class GndComponent(SimpleTextComponent):
     text = "Gnd"
     term_name = "gnd"
+    term_pos = "top"
 
     def validate(self):
         assert self['gnd'].output == "low"
@@ -327,3 +344,74 @@ class SwitchComponent(Component):
     def get_bbox(self):
         return (self.pos[0]-self.width/2, self.pos[1]-self.height/2,
                 self.width, self.height)
+
+    def reset(self):
+        t = self['term']
+        t.input = "float"
+        t.output = self.outputs[0]
+
+
+class IOComponent(Component):
+
+    def __init__(self, *args, **kwargs):
+        super(IOComponent, self).__init__(*args, **kwargs)
+        self.add_terminal("term", (0, 0))
+
+    def get_bbox(self):
+        return (self.pos[0], self.pos[1], 0, 0)
+
+
+class AggregateComponent(Component):
+
+    def __init__(self, schematic, *args, **kwargs):
+        super(AggregateComponent, self).__init__(*args, **kwargs)
+        self.schematic = schematic
+
+        self.terminal_pairs = []
+        for entity in schematic.entities:
+            if isinstance(entity, IOComponent):
+                t = self.add_terminal(entity.name, entity.pos)
+                self.terminal_pairs.append((t, entity["term"]))
+
+    def draw(self, ctx, **kwargs):
+        #TODO: Scale and such
+        super(AggregateComponent, self).draw(ctx, **kwargs)
+
+        self.transform(ctx)
+        if kwargs.get('selected', False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+        ctx.set_line_width(1.0/self.scale)
+        ctx.rectangle(*self.get_bbox())
+        ctx.stroke()
+
+        del kwargs['selected']
+        del kwargs['draw_terminals']
+        self.schematic.draw(ctx, **kwargs)
+
+    def get_bbox(self):
+        return self.schematic.get_bbox()
+
+    def validate(self):
+        self.schematic.validate()
+
+    def update(self):
+
+        # Copy external inputs to IO Component outputs
+        for external, internal in self.terminal_pairs:
+            internal.output = external.input
+
+        self.schematic.tick()
+
+        # Copy IO Component inputs to external outputs
+        for external, internal in self.terminal_pairs:
+            external.output = internal.input
+
+    def tick(self):
+        for entity in self.schematic.entities:
+            entity.tick()
+
+    def reset(self):
+        for item in list(self.schematic.entities) + list(self.schematic.nets):
+            item.reset()

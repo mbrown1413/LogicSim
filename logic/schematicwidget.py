@@ -63,7 +63,7 @@ class SchematicWidget(gtk.DrawingArea):
 
         if not self.dragged:
             self.draw_grid(context, event.area)
-        self.schematic.draw(context, selected=(self.selected,))
+        self.schematic.draw(context, selected_entities=(self.selected,))
 
         """
         if self.selected:
@@ -87,7 +87,7 @@ class SchematicWidget(gtk.DrawingArea):
         delta = mouse_pos - self.prev_mouse_pos
 
         if self.dragging_entity:
-            pass #XXX self.dragging_entity.pos = self.nearest_gridpoint(
+            self.dragging_entity.pos += delta / self.scale
         else:
             self.draw_pos += delta
 
@@ -99,11 +99,12 @@ class SchematicWidget(gtk.DrawingArea):
     def on_button_press(self, widget, event):
         self.dragged = False
 
-        if self.selected and event.state & gdk.BUTTON1_MASK and \
-                    self.selected.point_intersect((event.x, event.y)):
+        if self.selected and event.button == 1 and \
+                    self.selected.point_intersect(self.pos_widget_to_draw(event.x, event.y)):
             self.dragging_entity = self.selected
 
     def on_button_release(self, widget, event):
+        self.dragging_entity = None
 
         if not self.dragged and event.button == 1:
             pos = self.pos_widget_to_draw(event.x, event.y)

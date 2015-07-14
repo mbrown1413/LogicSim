@@ -13,16 +13,16 @@ class Schematic(object):
         self.nets = set()
         self.reset()
 
-    def draw(self, context, selected=(), **kwargs):
+    def draw(self, context, selected_entities=(), **kwargs):
         default_draw_connections = kwargs.get('draw_terminals', False)
 
         for entity in self.entities:
             context.save()
-            if entity in selected:
+            if entity in selected_entities:
                 kwargs['draw_terminals'] = True
             else:
                 kwargs['draw_terminals'] = default_draw_connections
-            entity.draw(context, selected=entity in selected, **kwargs)
+            entity.draw(context, selected=entity in selected_entities, **kwargs)
             context.restore()
 
             """
@@ -107,6 +107,19 @@ class Schematic(object):
                     if prev_term_outs[name] != cur_term_outs[name]:
                         to_visit.append(term.net)
 
-            else:
+            elif item is not None:
                 print item
                 raise RuntimeError()
+
+    def get_bbox(self):
+        left = top = float('inf')
+        right = bot = float('-inf')
+        for item in list(self.entities) + list(self.nets):
+            bbox  = item.get_bbox()
+            x1, y1 = bbox[0], bbox[1]
+            x2, y2 = bbox[0]+bbox[2], bbox[1]+bbox[3]
+            left  = min(left,  x1, x2)
+            top   = min(top,   y1, y2)
+            right = max(right, x1, x2)
+            bot   = max(bot,   y1, y2)
+        return (left, top, right-left, bot-top)

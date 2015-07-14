@@ -41,20 +41,30 @@ def main():
     """
 
     # Not Gate
-    vdd = logic.components.VddComponent((10, -100))
-    gnd = logic.components.GndComponent((10, 50))
-    s1 = logic.components.SwitchComponent((-50, 0), outputs=('low', 'high'))
+    vdd = logic.components.VddComponent((10, -70))
+    gnd = logic.components.GndComponent((10, 30))
+    io1 = logic.components.IOComponent((-50, -20), name="in")
     t1 = logic.components.TransistorEntity((0, 0), name="t1")
-    t2 = logic.components.TransistorEntity((0, -50), name="t2", pmos=True)
-    p1 = logic.components.ProbeComponent((50, -20))
-    schematic.add_entities((
-        vdd, gnd, s1, t1, t2, p1
+    t2 = logic.components.TransistorEntity((0, -40), name="t2", pmos=True)
+    io2 = logic.components.IOComponent((50, -20), name="out")
+    not_schem = logic.Schematic()
+    not_schem.add_entities((
+        vdd, gnd, io1, t1, t2, io2
     ))
-    schematic.connect((vdd, t2['source']))
-    schematic.connect((gnd, t1['drain']))
-    schematic.connect((s1, t1['gate'], t2['gate']))
-    schematic.connect((p1, t1['source'], t2['drain']))
-    
+    not_schem.connect((vdd, t2['source']))
+    not_schem.connect((gnd, t1['drain']))
+    not_schem.connect((io1, t1['gate'], t2['gate']))
+    not_schem.connect((io2, t1['source'], t2['drain']))
+    not_component = logic.components.AggregateComponent(not_schem)
+
+    s1 = logic.components.SwitchComponent((-80, -20), outputs=('low', 'high'))
+    p1 = logic.components.ProbeComponent((80, -20))
+    schematic.add_entities((
+        not_component, s1, p1
+    ))
+    schematic.connect((s1, not_component['in']))
+    schematic.connect((p1, not_component['out']))
+
 
     widget = logic.SchematicWidget(schematic)
 

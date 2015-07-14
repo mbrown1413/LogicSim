@@ -42,6 +42,16 @@ class Net(object):
 
         context.stroke()
 
+    def get_bbox(self):
+        left = top = float('inf')
+        right = bot = float('-inf')
+        for term in self.terminals:
+            left = min(left, term.pos[0])
+            top = min(top, term.pos[1])
+            right = max(right, term.pos[0])
+            bot = max(bot, term.pos[1])
+        return (left, top, right-left, bot-left)
+
     def update(self):
 
         def combine(terms):
