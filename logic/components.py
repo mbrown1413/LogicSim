@@ -205,7 +205,6 @@ class SimpleTextComponent(Component):
         if self.text is None:
             raise RuntimeError('Subclasses must overwrite "term" variable')
         pos = {"bot": (0, 0), "top": (0, -10)}[self.term_pos]
-        print self, pos
         self.add_terminal(self.term_name, pos)
         self.term = self.terminals[self.term_name]
         self.reset()
@@ -383,7 +382,15 @@ class AggregateComponent(Component):
         else:
             ctx.set_source_rgb(0, 0, 0)
         ctx.set_line_width(1.0/self.scale)
-        ctx.rectangle(*self.get_bbox())
+
+        bbox = self.get_bbox()
+        ctx.rectangle(
+            bbox[0]-self.pos[0],
+            bbox[1]-self.pos[1],
+            bbox[2],
+            bbox[3],
+        )
+
         ctx.stroke()
 
         del kwargs['selected']
@@ -391,7 +398,13 @@ class AggregateComponent(Component):
         self.schematic.draw(ctx, **kwargs)
 
     def get_bbox(self):
-        return self.schematic.get_bbox()
+        bbox = self.schematic.get_bbox()
+        return (
+            bbox[0]+self.pos[0],
+            bbox[1]+self.pos[1],
+            bbox[2],
+            bbox[3],
+        )
 
     def validate(self):
         self.schematic.validate()
