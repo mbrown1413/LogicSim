@@ -75,10 +75,6 @@ def main():
     window.show_all()
     window.set_title("Logic Simulator")
 
-    # Not sure why I couldn't get this event to work directly with the widget.
-    window.connect("key-press-event", lambda w, e: widget.on_key_press(widget, e))
-    window.add_events(gdk.KEY_PRESS_MASK)
-
     widget.pan_to_entities()
 
     gtk.main()

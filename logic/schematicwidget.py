@@ -20,7 +20,6 @@ import cairo
 
 class SchematicWidget(gtk.DrawingArea):
     MIN_SCALE = 0.2
-    ARROW_KEY_PAN_AMOUNT = 10
 
     def __init__(self, schematic):
         gtk.DrawingArea.__init__(self)
@@ -28,23 +27,43 @@ class SchematicWidget(gtk.DrawingArea):
         self.schematic = schematic
         # Widget-space coordinate of the upper left corner of the canvas
         self.draw_pos = numpy.array((0, 0))
-        self.prev_mouse_pos = None  # Widget-space
-        self.dragged = False
-        self.selected = None
         self.scale = 2
-        self.dragging_entity = None
 
         self.connect("expose_event", self.on_expose)
-        self.connect("motion-notify-event", self.on_movement)
-        self.connect("button-press-event", self.on_button_press)
-        self.connect("button-release-event", self.on_button_release)
-        self.connect("scroll-event", self.on_scroll)
 
-        self.add_events(gdk.POINTER_MOTION_MASK)
-        self.add_events(gdk.BUTTON_PRESS_MASK)
-        self.add_events(gdk.BUTTON_RELEASE_MASK)
-        self.add_events(gdk.KEY_PRESS_MASK)
-        #self.add_events(gdk.ALL_EVENTS_MASK)
+        self.selected = None
+        self.dragging = False
+        self.grid_visible = True
+
+        self.action_listeners = (
+
+            # Mouse Actions
+            EntityDragAction(mouse_button=1),
+            PanDragAction(mouse_button=1),
+            SelectAction(mouse_button=1),
+
+            ZoomAction(),
+
+            # Keyboard Actions
+            DeleteAction(key=65535),  # Delete key
+            EntityPanAction(
+                left=65361, up=65362, right=65363, down=65364),  # Arrow Keys
+            SimpleActions(),  # Catch-all for a lot of simple keypresses
+
+        )
+        for action in self.action_listeners:
+            action.register(self)
+
+        #self.add_events(gdk.POINTER_MOTION_MASK)
+        #self.add_events(gdk.BUTTON_PRESS_MASK)
+        #self.add_events(gdk.BUTTON_RELEASE_MASK)
+        #self.add_events(gdk.KEY_PRESS_MASK)
+        #TODO: For now, going to listen to all events, since I don't care about
+        #      efficiency. Correctness is more important.
+        self.add_events(gdk.ALL_EVENTS_MASK)
+
+        # Needed for keyboard events. See docs for gtk.DrawingArea
+        self.set_can_focus(True)
 
         self.schematic.tick()
         self.post_redraw()
@@ -59,9 +78,8 @@ class SchematicWidget(gtk.DrawingArea):
 
         context.translate(*self.draw_pos)
         context.scale(self.scale, self.scale)
-        #context.scale(WIDTH/1.0, HEIGHT/1.0) # Normalizing the canvas
 
-        if not self.dragged:
+        if self.grid_visible:
             self.draw_grid(context, event.area)
         self.schematic.draw(context, selected_entities=(self.selected,))
 
@@ -72,115 +90,6 @@ class SchematicWidget(gtk.DrawingArea):
             context.set_line_width(0.01)
             context.stroke()
         """
-
-    def on_movement(self, widget, event):
-        self.dragged = True
-
-        if not event.state & gdk.BUTTON1_MASK:
-            self.prev_mouse_pos = None
-            return
-
-        mouse_pos = numpy.array([event.x, event.y])
-        if self.prev_mouse_pos is None:
-            self.prev_mouse_pos = mouse_pos
-            return True
-        delta = mouse_pos - self.prev_mouse_pos
-
-        if self.dragging_entity:
-            self.dragging_entity.pos += delta / self.scale
-        else:
-            self.draw_pos += delta
-
-        if not (delta == 0).all():
-            self.post_redraw()
-        self.prev_mouse_pos = mouse_pos
-        return True
-
-    def on_button_press(self, widget, event):
-        self.dragged = False
-
-        if self.selected and event.button == 1 and \
-                    self.selected.point_intersect(self.pos_widget_to_draw(event.x, event.y)):
-            self.dragging_entity = self.selected
-
-    def on_button_release(self, widget, event):
-        self.dragging_entity = None
-
-        if not self.dragged and event.button == 1:
-            pos = self.pos_widget_to_draw(event.x, event.y)
-            self.selected = self.entity_at_pos(pos)
-            self.post_redraw()
-            return True
-        elif event.button == 1:
-            self.dragged = False
-            self.post_redraw()
-
-        if event.button == 2:
-            pos = self.pos_widget_to_draw(event.x, event.y)
-            entity = self.entity_at_pos(pos)
-            if entity:
-                entity.on_activate()
-                self.schematic.tick()
-                self.post_redraw()
-                return True
-
-        return False
-
-    def on_key_press(self, widget, event):
-        if event.keyval == ord(']'):
-            self.zoom(.4)
-        elif event.keyval == ord('['):
-            self.zoom(-.4)
-        elif event.keyval == ord('='):
-            self.zoom_set(1)
-        elif event.keyval == 65535:  # Delete
-            if self.selected:
-                self.schematic.remove_entity(self.selected)
-                self.selected = None
-                self.post_redraw()
-        elif event.keyval == 65361:  # Left
-            self.pan(self.ARROW_KEY_PAN_AMOUNT, 0)
-            self.post_redraw()
-        elif event.keyval == 65362:  # Up
-            self.pan(0, self.ARROW_KEY_PAN_AMOUNT)
-            self.post_redraw()
-        elif event.keyval == 65363:  # Right
-            self.pan(-self.ARROW_KEY_PAN_AMOUNT, 0)
-            self.post_redraw()
-        elif event.keyval == 65364:  # Down
-            self.pan(0, -self.ARROW_KEY_PAN_AMOUNT)
-            self.post_redraw()
-
-        elif event.keyval == ord('r'):
-            self.schematic.reset()
-            self.schematic.tick()
-            self.post_redraw()
-        elif event.keyval == ord('t'):
-            self.schematic.tick()
-            self.post_redraw()
-        elif event.keyval == ord(' '):
-            if self.selected:
-                self.selected.on_activate()
-                self.schematic.tick()
-                self.post_redraw()
-
-        elif event.keyval == ord('R'):
-            if self.selected:
-                self.selected.rotate(90)
-                self.post_redraw()
-
-        return False
-
-    def on_scroll(self, widget, event):
-
-        if event.state & gdk.CONTROL_MASK and event.direction in (gdk.SCROLL_UP, gdk.SCROLL_DOWN):
-            amount = 0.4 if event.direction == gdk.SCROLL_UP else -0.4
-            self.zoom(amount, numpy.array((event.x, event.y)))
-            self.dragged = False
-            self.post_redraw()
-            return True
-
-        return False
 
     def pos_widget_to_draw(self, x, y):
         return (numpy.array((x, y)) - self.draw_pos) / self.scale
@@ -267,6 +176,7 @@ class SchematicWidget(gtk.DrawingArea):
 
     def pan(self, delta_x, delta_y):
         self.draw_pos += (delta_x, delta_y)
+        self.post_redraw()
 
     def pan_to(self, draw_pos):
         _, _, width, height = self.get_allocation()
@@ -294,3 +204,223 @@ class SchematicWidget(gtk.DrawingArea):
             rect = gdk.Rectangle(0, 0, w, h)
             self.window.invalidate_rect(rect, True)
             self.window.process_updates(True)
+
+
+class BaseAction(object):
+    EVENT_FUNCS = {
+        "expose_event": "on_expose",
+        "motion-notify-event": "on_movement",
+        "button-press-event": "on_button_press",
+        "button-release-event": "on_button_release",
+        "key-press-event": "on_key_press",
+        "scroll-event": "on_scroll",
+    }
+
+    # Subclasses overwrite this to make specific keyword arguments show up as
+    # attributes.
+    parameters = ()
+
+    def __init__(self, **kwargs):
+        for k in self.parameters:
+            assert k in kwargs
+        for k, v in kwargs.iteritems():
+            assert k in self.parameters
+            setattr(self, k, v)
+
+    def register(self, widget):
+        self.widget = widget
+
+        for event_name, func_name in self.EVENT_FUNCS.iteritems():
+            if hasattr(self, func_name):
+                self.widget.connect(event_name, getattr(self, func_name))
+
+
+class SelectAction(BaseAction):
+    parameters = ("mouse_button",)
+
+    def on_button_release(self, widget, event):
+
+        if event.button == 1:
+            pos = widget.pos_widget_to_draw(event.x, event.y)
+            widget.selected = widget.entity_at_pos(pos)
+            widget.post_redraw()
+            return True
+
+class DeleteAction(BaseAction):
+    parameters = ("key",)
+
+    def on_key_press(self, widget, event):
+        if event.keyval == self.key and widget.selected:
+            widget.schematic.remove_entity(widget.selected)
+            widget.selected = None
+            widget.post_redraw()
+
+class BaseDragAction(BaseAction):
+    parameters = ("mouse_button",)
+
+    def __init__(self, **kwargs):
+        super(BaseDragAction, self).__init__(**kwargs)
+        self.dragging = False
+        self.waiting_for_drag = False
+
+    def on_button_press(self, widget, event):
+        if event.button == self.mouse_button and not widget.dragging:
+            self.waiting_for_drag = True
+
+    def on_movement(self, widget, event):
+
+        if self.waiting_for_drag:
+            self.waiting_for_drag = False
+            if widget.dragging:
+                self.dragging = False
+            else:
+                self.dragging = self.should_start_drag(widget, event)
+                assert self.dragging in (True, False)
+
+            if self.dragging:
+                self.widget.dragging = True
+                self.on_drag_start(widget, event)
+
+                # Propagate event to other handlers so they can realize a
+                # different action started a drag. Without this, other drag
+                # actions would consider dragging as soon as this one stopped,
+                # being unaware of any of the events that happened during this
+                # drag.
+                return False
+
+        if self.dragging:
+            self.on_drag_movement(widget, event)
+            return True
+
+    def on_button_release(self, widget, event):
+        if event.button == self.mouse_button:
+            self.waiting_for_drag = False
+
+            if self.dragging:
+                self.dragging = False
+                widget.dragging = False
+                self.on_drag_end(widget, event)
+                return True
+
+    def should_start_drag(self, widget, event):
+        return True
+
+    def on_drag_start(self, widget, event):
+        pass
+
+    def on_drag_movement(self, widget, event):
+        pass
+
+    def on_drag_end(self, widget, event):
+        pass
+
+class PanDragAction(BaseDragAction):
+
+    def on_drag_start(self, widget, event):
+        self.prev_mouse_pos = numpy.array((event.x, event.y))
+        widget.grid_visible = False
+
+    def on_drag_movement(self, widget, event):
+        mouse_pos = numpy.array((event.x, event.y))
+        delta = mouse_pos - self.prev_mouse_pos
+        widget.draw_pos += delta
+        self.prev_mouse_pos = mouse_pos
+        widget.post_redraw()
+
+    def on_drag_end(self, widget, event):
+        widget.grid_visible = True
+        widget.post_redraw()
+
+class EntityDragAction(BaseDragAction):
+
+    def should_start_drag(self, widget, event):
+        return widget.selected is not None and \
+               widget.selected.point_intersect(
+                   widget.pos_widget_to_draw(event.x, event.y)
+               )
+
+    def on_drag_start(self, widget, event):
+        self.start_entity_pos = tuple(widget.selected.pos)
+        self.start_mouse_pos = widget.pos_widget_to_draw(event.x, event.y)
+
+    def on_drag_movement(self, widget, event):
+        GRID_SIZE = 10
+        mouse_pos = widget.pos_widget_to_draw(event.x, event.y)
+        delta = numpy.round((mouse_pos - self.start_mouse_pos) / GRID_SIZE)
+        widget.selected.pos = self.start_entity_pos + delta*GRID_SIZE
+
+        widget.post_redraw()
+
+    def on_drag_end(self, widget, event):
+        self.start_entity_pos = None
+        self.start_mouse_pos = None
+
+class EntityPanAction(BaseAction):
+    parameters = ("left", "up", "right", "down",)
+
+    ARROW_KEY_PAN_AMOUNT = 10
+
+    def on_key_press(self, widget, event):
+        if event.keyval == self.left:  # Left
+            widget.pan(self.ARROW_KEY_PAN_AMOUNT, 0)
+        elif event.keyval == self.up:  # Up
+            widget.pan(0, self.ARROW_KEY_PAN_AMOUNT)
+        elif event.keyval == self.right:  # Right
+            widget.pan(-self.ARROW_KEY_PAN_AMOUNT, 0)
+        elif event.keyval == self.down:  # Down
+            widget.pan(0, -self.ARROW_KEY_PAN_AMOUNT)
+
+class ZoomAction(BaseAction):
+    ZOOM_AMOUNT = 0.4
+
+    def on_scroll(self, widget, event):
+        if event.state & gdk.CONTROL_MASK and event.direction in (gdk.SCROLL_UP, gdk.SCROLL_DOWN):
+            amount = self.ZOOM_AMOUNT if event.direction == gdk.SCROLL_UP else -self.ZOOM_AMOUNT
+            widget.zoom(amount, numpy.array((event.x, event.y)))
+            widget.post_redraw()
+            return True
+
+    def on_key_press(self, widget, event):
+        if event.keyval == ord(']'):
+            widget.zoom(self.ZOOM_AMOUNT)
+        elif event.keyval == ord('['):
+            widget.zoom(-self.ZOOM_AMOUNT)
+
+class SimpleActions(BaseAction):
+    """
+    An aggregate of simple actions that don't deserve the length of a separate
+    class.
+
+    Is this just me being lazy, or is it good design? We may never know.
+    """
+
+    def on_key_press(self, widget, event):
+
+        if event.keyval == ord('r'):  # Reset Simulation
+            widget.schematic.reset()
+            widget.schematic.tick()
+            widget.post_redraw()
+
+        elif event.keyval == ord('='):  # Reset Zoom
+            widget.zoom_set(1)
+
+        elif event.keyval == ord(' '):  # Activate entity
+            if widget.selected:
+                widget.selected.on_activate()
+                widget.schematic.tick()
+                widget.post_redraw()
+
+        elif event.keyval == ord('R'):  # Rotate
+            if widget.selected:
+                widget.selected.rotate(90)
+                widget.post_redraw()
+
+    def on_button_release(self, widget, event):
+        if event.button == 2:
+            pos = widget.pos_widget_to_draw(event.x, event.y)
+            entity = widget.entity_at_pos(pos)
+            if entity:
+                entity.on_activate()
+                widget.schematic.tick()
+                widget.post_redraw()
+                return True
