@@ -111,19 +111,16 @@ class Component(logic.Entity):
     def update(self):
         pass
 
-    def tick(self):
-        pass
-
     def reset(self):
         for term in self.terminals.itervalues():
             term.reset()
 
 
-class TransistorEntity(Component):
+class TransistorComponent(Component):
 
     def __init__(self, *args, **kwargs):
         self.pmos = kwargs.pop("pmos", False)
-        super(TransistorEntity, self).__init__(*args, **kwargs)
+        super(TransistorComponent, self).__init__(*args, **kwargs)
         self.scale = 5
         self.add_terminal("gate", (-2, 0))
         self.add_terminal("source", (2, -4))
@@ -155,7 +152,7 @@ class TransistorEntity(Component):
             d.output = "float"
 
     def draw(self, ctx, **kwargs):
-        super(TransistorEntity, self).draw(ctx, **kwargs)
+        super(TransistorComponent, self).draw(ctx, **kwargs)
 
         self.transform(ctx)
         ctx.set_line_width(1.0/self.scale)
@@ -247,6 +244,7 @@ class VddComponent(SimpleTextComponent):
         assert self['vdd'].output == "high"
 
     def reset(self):
+        super(VddComponent, self).reset()
         self['vdd'].output = "high"
 
 
@@ -259,6 +257,7 @@ class GndComponent(SimpleTextComponent):
         assert self['gnd'].output == "low"
 
     def reset(self):
+        super(GndComponent, self).reset()
         self['gnd'].output = "low"
 
 
@@ -361,6 +360,7 @@ class IOComponent(Component):
 
 
 class AggregateComponent(Component):
+    io_positions = {}
 
     def __init__(self, schematic, *args, **kwargs):
         super(AggregateComponent, self).__init__(*args, **kwargs)
@@ -369,8 +369,11 @@ class AggregateComponent(Component):
         self.terminal_pairs = []
         for entity in schematic.entities:
             if isinstance(entity, IOComponent):
-                t = self.add_terminal(entity.name, entity.pos)
+                pos = self.io_positions.get(entity.name, entity.pos)
+                t = self.add_terminal(entity.name, pos)
                 self.terminal_pairs.append((t, entity["term"]))
+
+        self.schematic.reset()
 
     def draw(self, ctx, **kwargs):
         #TODO: Scale and such
@@ -415,16 +418,168 @@ class AggregateComponent(Component):
         for external, internal in self.terminal_pairs:
             internal.output = external.input
 
-        self.schematic.tick()
+        print "UPDATING:", self
+        self.schematic.update()
 
         # Copy IO Component inputs to external outputs
         for external, internal in self.terminal_pairs:
             external.output = internal.input
 
-    def tick(self):
-        for entity in self.schematic.entities:
-            entity.tick()
-
     def reset(self):
-        for item in list(self.schematic.entities) + list(self.schematic.nets):
-            item.reset()
+        self.schematic.reset()
+        super(AggregateComponent, self).reset()
+
+
+class NotGateComponent(AggregateComponent):
+    io_positions = {
+        "in": (-20, 0),
+        "out": (20, 0),
+    }
+
+    def __init__(self, *args, **kwargs):
+        vdd = VddComponent((10, -70))
+        gnd = GndComponent((10, 30))
+        io_in = IOComponent((-50, -20), name="in")
+        t1 = TransistorComponent((0, 0), name="t1")
+        t2 = TransistorComponent((0, -40), name="t2", pmos=True)
+        io_out = IOComponent((50, -20), name="out")
+        schematic = logic.Schematic()
+        schematic.add_entities((
+            vdd, gnd, io_in, t1, t2, io_out
+        ))
+        schematic.connect((vdd, t2['source']))
+        schematic.connect((gnd, t1['drain']))
+        schematic.connect((io_in, t1['gate'], t2['gate']))
+        schematic.connect((io_out, t1['source'], t2['drain']))
+
+        super(NotGateComponent, self).__init__(schematic, *args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        Component.draw(self, ctx, **kwargs)
+
+        self.transform(ctx)
+        ctx.set_line_width(1.0/self.scale)
+        if kwargs.get("selected", False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+
+        ctx.move_to(-20, 0)
+        ctx.line_to(-10, 0)
+
+        ctx.move_to(-10, -10)
+        ctx.line_to(-10, 10)
+        ctx.line_to(10, 0)
+        ctx.line_to(-10, -10)
+        ctx.stroke()
+
+        ctx.arc(12.5, 0, 1.5, 0, 2*math.pi)
+        ctx.stroke()
+
+        ctx.move_to(14, 0)
+        ctx.line_to(20, 0)
+        ctx.stroke()
+
+    def get_bbox(self):
+        return (
+            -20+self.pos[0], -10+self.pos[1],
+            40, 20
+        )
+
+
+class NorGateComponent(AggregateComponent):
+    io_positions = {
+        "in1": (-30, -10),
+        "in2": (-30, 10),
+        "out": (30, 0),
+    }
+
+    def __init__(self, *args, **kwargs):
+        vdd = VddComponent()
+        gnd = GndComponent()
+        io_in1 = IOComponent(name="in1")
+        io_in2 = IOComponent(name="in2")
+        io_out = IOComponent(name="out")
+        t1 = TransistorComponent(pmos=True)
+        t2 = TransistorComponent(pmos=True)
+        t3 = TransistorComponent()
+        t4 = TransistorComponent()
+
+        schematic = logic.Schematic()
+        schematic.add_entities((
+            vdd, gnd, io_in1, io_in2, io_out, t1, t2, t3, t4
+        ))
+        schematic.connect((io_in1, t1['gate'], t3['gate']))
+        schematic.connect((io_in2, t2['gate'], t4['gate']))
+        schematic.connect((vdd, t1['source']))
+        schematic.connect((t1['drain'], t2['source']))
+        schematic.connect((gnd, t3['source'], t4['source']))
+        schematic.connect((t2['drain'], t3['drain'], t4['drain'], io_out))
+
+        super(NorGateComponent, self).__init__(schematic, *args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        Component.draw(self, ctx, **kwargs)
+
+        self.transform(ctx)
+        ctx.set_line_width(1.0/self.scale)
+        if kwargs.get("selected", False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+
+        ctx.move_to(-20, -20)
+        ctx.curve_to(-10, -5, -10, 5, -20, 20)
+        ctx.line_to(-10, 20)
+        ctx.curve_to(0, 20, 15, 10, 20, 0)
+        ctx.curve_to(15, -10, 0, -20, -10, -20)
+        ctx.line_to(-20, -20)
+
+        ctx.move_to(-30, -10)
+        ctx.line_to(-14.5, -10)
+
+        ctx.move_to(-30, 10)
+        ctx.line_to(-14.5, 10)
+
+        ctx.move_to(20, 0)
+        ctx.line_to(30, 0)
+
+        ctx.stroke()
+
+    def get_bbox(self):
+        return (
+            -30+self.pos[0], -20+self.pos[1],
+            60, 40
+        )
+
+
+class NandGateComponent(AggregateComponent):
+    io_positions = {
+        "in1": (-30, -10),
+        "in2": (-30, 10),
+        "out": (30, 0),
+    }
+
+    def __init__(self, *args, **kwargs):
+        vdd = VddComponent((0, -50))
+        gnd = GndComponent((0, 50))
+        io_in1 = IOComponent((-30, 0), name="in1")
+        io_in2 = IOComponent((-30, 50), name="in2")
+        io_out = IOComponent((100, 0), name="out")
+        t1 = TransistorComponent((0, 0), pmos=True)
+        t2 = TransistorComponent((50, 0), pmos=True)
+        t3 = TransistorComponent((0, 50))
+        t4 = TransistorComponent((50, 50))
+
+        schematic = logic.Schematic()
+        schematic.add_entities((
+            vdd, gnd, io_in1, io_in2, io_out, t1, t2, t3, t4
+        ))
+        schematic.connect((io_in1, t1['gate'], t3['gate']))
+        schematic.connect((io_in2, t2['gate'], t4['gate']))
+        schematic.connect((vdd, t1['source'], t2['source']))
+        schematic.connect((gnd, t3['source']))
+        schematic.connect((t3['drain'], t4['source']))
+        schematic.connect((io_out, t1['drain'], t2['drain'], t4['drain']))
+
+        super(NandGateComponent, self).__init__(schematic, *args, **kwargs)

@@ -32,7 +32,7 @@ class Net(object):
 
             context.restore()
             first_iteration = False
-        
+
         context.set_source_rgb(*{
             "high": (0, 1, 0),
             "low": (0, 0, 0),

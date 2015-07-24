@@ -23,8 +23,8 @@ class SchematicWidget(gtk.DrawingArea):
 
     def __init__(self, schematic):
         gtk.DrawingArea.__init__(self)
-
         self.schematic = schematic
+
         # Widget-space coordinate of the upper left corner of the canvas
         self.draw_pos = numpy.array((0, 0))
         self.scale = 2
@@ -65,10 +65,12 @@ class SchematicWidget(gtk.DrawingArea):
         # Needed for keyboard events. See docs for gtk.DrawingArea
         self.set_can_focus(True)
 
-        self.schematic.tick()
+        self.schematic.reset()
+        #self.schematic.update()
         self.post_redraw()
 
     def on_expose(self, widget, event):
+        #TODO: Maybe not nessesary to validate on every exposure
         self.schematic.validate()
 
         context = widget.window.cairo_create()
@@ -398,7 +400,11 @@ class SimpleActions(BaseAction):
 
         if event.keyval == ord('r'):  # Reset Simulation
             widget.schematic.reset()
-            widget.schematic.tick()
+            #widget.schematic.update()
+            widget.post_redraw()
+
+        elif event.keyval == ord('u'):  # Update Simulation
+            widget.schematic.update()
             widget.post_redraw()
 
         elif event.keyval == ord('='):  # Reset Zoom
@@ -407,7 +413,7 @@ class SimpleActions(BaseAction):
         elif event.keyval == ord(' '):  # Activate entity
             if widget.selected:
                 widget.selected.on_activate()
-                widget.schematic.tick()
+                widget.schematic.update()
                 widget.post_redraw()
 
         elif event.keyval == ord('R'):  # Rotate
@@ -421,6 +427,6 @@ class SimpleActions(BaseAction):
             entity = widget.entity_at_pos(pos)
             if entity:
                 entity.on_activate()
-                widget.schematic.tick()
+                widget.schematic.update()
                 widget.post_redraw()
                 return True

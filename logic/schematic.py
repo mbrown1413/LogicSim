@@ -11,7 +11,6 @@ class Schematic(object):
     def __init__(self):
         self.entities = set()
         self.nets = set()
-        self.reset()
 
     def draw(self, context, selected_entities=(), **kwargs):
         default_draw_connections = kwargs.get('draw_terminals', False)
@@ -38,6 +37,7 @@ class Schematic(object):
             context.restore()
 
     def add_entity(self, entity):
+        entity.reset()
         self.entities.add(entity)
 
     def add_entities(self, entities):
@@ -45,6 +45,7 @@ class Schematic(object):
 
     def remove_entity(self, entity):
         self.entities.remove(entity)
+        #TODO: Disconnect from nets; remove nets that have one connection.
 
     def connect(self, terminals):
         for term in terminals:
@@ -79,16 +80,12 @@ class Schematic(object):
                 assert term in all_terminals
 
     def reset(self):
-        self.n = -1
         for entity in self.entities:
             entity.reset()
         for net in self.nets:
             net.reset()
 
-    def tick(self):
-        self.n += 1
-        for entity in self.entities:
-            entity.tick()
+    def update(self):
 
         to_visit = collections.deque(list(self.entities) + list(self.nets))
         while to_visit:
