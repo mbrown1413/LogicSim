@@ -137,16 +137,8 @@ class TransistorComponent(Component):
                  (self.pmos and g.input == "low")
 
         if active:
-            s.output, d.output = d.input, s.input
-
-        elif g.input in ("contention", "float"):
-            # s and d will output float when the transistor is active. They
-            # will output s_out and d_out when inactive. If these two are
-            # different, then output contention instead.
-            s_out, d_out = d.input, s.input
-            s.output = "contention" if s_out != "float" else "float"
-            d.output = "contention" if d_out != "float" else "float"
-
+            s.output = d.input
+            d.output = s.input
         else:
             s.output = "float"
             d.output = "float"
@@ -418,7 +410,6 @@ class AggregateComponent(Component):
         for external, internal in self.terminal_pairs:
             internal.output = external.input
 
-        print "UPDATING:", self
         self.schematic.update()
 
         # Copy IO Component inputs to external outputs
