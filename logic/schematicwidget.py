@@ -66,7 +66,7 @@ class SchematicWidget(gtk.DrawingArea):
         self.set_can_focus(True)
 
         self.schematic.reset()
-        #self.schematic.update()
+        self.schematic.update()
         self.post_redraw()
 
     def on_expose(self, widget, event):

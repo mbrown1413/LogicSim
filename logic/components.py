@@ -532,9 +532,12 @@ class NorGateComponent(AggregateComponent):
         ctx.move_to(-30, 10)
         ctx.line_to(-14.5, 10)
 
-        ctx.move_to(20, 0)
+        ctx.move_to(24, 0)
         ctx.line_to(30, 0)
 
+        ctx.stroke()
+
+        ctx.arc(22.5, 0, 1.5, 0, 2*math.pi)
         ctx.stroke()
 
     def get_bbox(self):
@@ -574,3 +577,320 @@ class NandGateComponent(AggregateComponent):
         schematic.connect((io_out, t1['drain'], t2['drain'], t4['drain']))
 
         super(NandGateComponent, self).__init__(schematic, *args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        Component.draw(self, ctx, **kwargs)
+
+        self.transform(ctx)
+        ctx.set_line_width(1.0/self.scale)
+        if kwargs.get("selected", False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+
+        ctx.move_to(-20, -20)
+        ctx.line_to(-20, 20)
+        ctx.line_to(-10, 20)
+        ctx.curve_to(0, 20, 20, 20, 20, 0)
+        ctx.curve_to(20, -20, 0, -20, -10, -20)
+        ctx.line_to(-20, -20)
+
+        ctx.move_to(-30, 10)
+        ctx.line_to(-20, 10)
+
+        ctx.move_to(-30, -10)
+        ctx.line_to(-20, -10)
+
+        ctx.move_to(24, 0)
+        ctx.line_to(30, 0)
+
+        ctx.stroke()
+
+        ctx.arc(22.5, 0, 1.5, 0, 2*math.pi)
+        ctx.stroke()
+
+
+    def get_bbox(self):
+        return (
+            -30+self.pos[0], -20+self.pos[1],
+            60, 40
+        )
+
+
+class AndGateComponent(AggregateComponent):
+    io_positions = {
+        "in1": (-30, -10),
+        "in2": (-30, 10),
+        "out": (30, 0),
+    }
+
+    def __init__(self, *args, **kwargs):
+        gate_nand = NandGateComponent()
+        gate_not = NotGateComponent()
+        io_in1 = IOComponent(name="in1")
+        io_in2 = IOComponent(name="in2")
+        io_out = IOComponent(name="out")
+
+        schematic = logic.Schematic()
+        schematic.add_entities((
+            gate_nand, gate_not, io_in1, io_in2, io_out
+        ))
+        schematic.connect((gate_nand["in1"], io_in1))
+        schematic.connect((gate_nand["in2"], io_in2))
+        schematic.connect((gate_nand["out"], gate_not["in"]))
+        schematic.connect((gate_not["out"], io_out))
+
+        super(AndGateComponent, self).__init__(schematic, *args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        Component.draw(self, ctx, **kwargs)
+
+        self.transform(ctx)
+        ctx.set_line_width(1.0/self.scale)
+        if kwargs.get("selected", False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+
+        ctx.move_to(-20, -20)
+        ctx.line_to(-20, 20)
+        ctx.line_to(-10, 20)
+        ctx.curve_to(0, 20, 20, 20, 20, 0)
+        ctx.curve_to(20, -20, 0, -20, -10, -20)
+        ctx.line_to(-20, -20)
+
+        ctx.move_to(-30, 10)
+        ctx.line_to(-20, 10)
+
+        ctx.move_to(-30, -10)
+        ctx.line_to(-20, -10)
+
+        ctx.move_to(20, 0)
+        ctx.line_to(30, 0)
+
+        ctx.stroke()
+
+
+class OrGateComponent(AggregateComponent):
+    io_positions = {
+        "in1": (-30, -10),
+        "in2": (-30, 10),
+        "out": (30, 0),
+    }
+
+    def __init__(self, *args, **kwargs):
+        gate_nor = NorGateComponent()
+        gate_not = NotGateComponent()
+        io_in1 = IOComponent(name="in1")
+        io_in2 = IOComponent(name="in2")
+        io_out = IOComponent(name="out")
+
+        schematic = logic.Schematic()
+        schematic.add_entities((
+            gate_nor, gate_not, io_in1, io_in2, io_out
+        ))
+        schematic.connect((gate_nor["in1"], io_in1))
+        schematic.connect((gate_nor["in2"], io_in2))
+        schematic.connect((gate_nor["out"], gate_not["in"]))
+        schematic.connect((gate_not["out"], io_out))
+
+        super(OrGateComponent, self).__init__(schematic, *args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        Component.draw(self, ctx, **kwargs)
+
+        self.transform(ctx)
+        ctx.set_line_width(1.0/self.scale)
+        if kwargs.get("selected", False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+
+        ctx.move_to(-20, -20)
+        ctx.curve_to(-10, -5, -10, 5, -20, 20)
+        ctx.line_to(-10, 20)
+        ctx.curve_to(0, 20, 15, 10, 20, 0)
+        ctx.curve_to(15, -10, 0, -20, -10, -20)
+        ctx.line_to(-20, -20)
+
+        ctx.move_to(-30, -10)
+        ctx.line_to(-14.5, -10)
+
+        ctx.move_to(-30, 10)
+        ctx.line_to(-14.5, 10)
+
+        ctx.move_to(20, 0)
+        ctx.line_to(30, 0)
+
+        ctx.stroke()
+
+    def get_bbox(self):
+        return (
+            -30+self.pos[0], -20+self.pos[1],
+            60, 40
+        )
+
+
+class XorGateComponent(AggregateComponent):
+    io_positions = {
+        "in1": (-30, -10),
+        "in2": (-30, 10),
+        "out": (30, 0),
+    }
+
+    def __init__(self, *args, **kwargs):
+        vdd = VddComponent((-50, -100))
+        gnd = GndComponent((-50, 100))
+        not1 = NotGateComponent((-100, -50))
+        not2 = NotGateComponent((-100, 50))
+        in1 = IOComponent((-150, -50), name="in1")
+        in2 = IOComponent((-150, 50), name="in2")
+        out = IOComponent((100, 0), name="out")
+        t1 = TransistorComponent((0, -75), pmos=True)
+        t2 = TransistorComponent((0, -25), pmos=True)
+        t3 = TransistorComponent((50, -75), pmos=True)
+        t4 = TransistorComponent((50, -25), pmos=True)
+        t5 = TransistorComponent((0, 75))
+        t6 = TransistorComponent((0, 25))
+        t7 = TransistorComponent((50, 75))
+        t8 = TransistorComponent((50, 25))
+
+        schematic = logic.Schematic()
+        schematic.add_entities((
+            vdd, gnd, not1, not2, in1, in2, out, t1, t2, t3, t4, t5, t6, t7, t8
+        ))
+        schematic.connect((vdd, t1['source'], t3['source']))
+        schematic.connect((t1['drain'], t2['source']))
+        schematic.connect((t3['drain'], t4['source']))
+        schematic.connect((gnd, t6['drain'], t8['drain']))
+        schematic.connect((t5['drain'], t6['source']))
+        schematic.connect((t7['drain'], t8['source']))
+        schematic.connect((out, t2['drain'], t4['drain'], t5['source'], t7['source']))
+
+        schematic.connect((in1, not1['in'], t1['gate'], t5['gate']))
+        schematic.connect((in2, not2['in'], t4['gate'], t6['gate']))
+        schematic.connect((not1['out'], t3['gate'], t7['gate']))
+        schematic.connect((not2['out'], t2['gate'], t8['gate']))
+
+        super(XorGateComponent, self).__init__(schematic, *args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        Component.draw(self, ctx, **kwargs)
+
+        self.transform(ctx)
+        ctx.set_line_width(1.0/self.scale)
+        if kwargs.get("selected", False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+
+        ctx.move_to(-20, -20)
+        ctx.curve_to(-10, -5, -10, 5, -20, 20)
+        ctx.line_to(-10, 20)
+        ctx.curve_to(0, 20, 15, 10, 20, 0)
+        ctx.curve_to(15, -10, 0, -20, -10, -20)
+        ctx.line_to(-20, -20)
+
+        ctx.move_to(-30, -10)
+        ctx.line_to(-14.5, -10)
+
+        ctx.move_to(-30, 10)
+        ctx.line_to(-14.5, 10)
+
+        ctx.move_to(20, 0)
+        ctx.line_to(30, 0)
+
+        ctx.move_to(-25, -20)
+        ctx.curve_to(-15, -5, -15, 5, -25, 20)
+
+        ctx.stroke()
+
+    def get_bbox(self):
+        return (
+            -30+self.pos[0], -20+self.pos[1],
+            60, 40
+        )
+
+
+class XnorGateComponent(AggregateComponent):
+    io_positions = {
+        "in1": (-30, -10),
+        "in2": (-30, 10),
+        "out": (30, 0),
+    }
+
+    def __init__(self, *args, **kwargs):
+        vdd = VddComponent((-50, -100))
+        gnd = GndComponent((-50, 100))
+        not1 = NotGateComponent((-100, -50))
+        not2 = NotGateComponent((-100, 50))
+        in1 = IOComponent((-150, -50), name="in1")
+        in2 = IOComponent((-150, 50), name="in2")
+        out = IOComponent((100, 0), name="out")
+        t1 = TransistorComponent((0, -75), pmos=True)
+        t2 = TransistorComponent((0, -25), pmos=True)
+        t3 = TransistorComponent((50, -75), pmos=True)
+        t4 = TransistorComponent((50, -25), pmos=True)
+        t5 = TransistorComponent((0, 75))
+        t6 = TransistorComponent((0, 25))
+        t7 = TransistorComponent((50, 75))
+        t8 = TransistorComponent((50, 25))
+
+        schematic = logic.Schematic()
+        schematic.add_entities((
+            vdd, gnd, not1, not2, in1, in2, out, t1, t2, t3, t4, t5, t6, t7, t8
+        ))
+        schematic.connect((vdd, t1['source'], t3['source']))
+        schematic.connect((t1['drain'], t2['source']))
+        schematic.connect((t3['drain'], t4['source']))
+        schematic.connect((gnd, t6['drain'], t8['drain']))
+        schematic.connect((t5['drain'], t6['source']))
+        schematic.connect((t7['drain'], t8['source']))
+        schematic.connect((out, t2['drain'], t4['drain'], t5['source'], t7['source']))
+
+        schematic.connect((in1, not1['in'], t1['gate'], t5['gate']))
+        schematic.connect((in2, not2['in'], t2['gate'], t8['gate']))
+        schematic.connect((not1['out'], t3['gate'], t7['gate']))
+        schematic.connect((not2['out'], t4['gate'], t6['gate']))
+
+        super(XnorGateComponent, self).__init__(schematic, *args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        Component.draw(self, ctx, **kwargs)
+
+        self.transform(ctx)
+        ctx.set_line_width(1.0/self.scale)
+        if kwargs.get("selected", False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+
+        ctx.move_to(-20, -20)
+        ctx.curve_to(-10, -5, -10, 5, -20, 20)
+        ctx.line_to(-10, 20)
+        ctx.curve_to(0, 20, 15, 10, 20, 0)
+        ctx.curve_to(15, -10, 0, -20, -10, -20)
+        ctx.line_to(-20, -20)
+
+        ctx.move_to(-30, -10)
+        ctx.line_to(-14.5, -10)
+
+        ctx.move_to(-30, 10)
+        ctx.line_to(-14.5, 10)
+
+        ctx.move_to(24, 0)
+        ctx.line_to(30, 0)
+
+        ctx.move_to(-25, -20)
+        ctx.curve_to(-15, -5, -15, 5, -25, 20)
+
+        ctx.stroke()
+
+        ctx.arc(22.5, 0, 1.5, 0, 2*math.pi)
+        ctx.stroke()
+
+    def get_bbox(self):
+        return (
+            -30+self.pos[0], -20+self.pos[1],
+            60, 40
+        )
