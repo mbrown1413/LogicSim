@@ -81,7 +81,7 @@ class SchematicWidget(gtk.DrawingArea):
         context.translate(*self.draw_pos)
         context.scale(self.scale, self.scale)
 
-        if self.grid_visible:
+        if self.grid_visible and self.scale > 0.8:
             self.draw_grid(context, event.area)
         self.schematic.draw(context, selected_entities=(self.selected,))
 
