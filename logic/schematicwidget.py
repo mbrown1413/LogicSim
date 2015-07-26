@@ -27,7 +27,7 @@ class SchematicWidget(gtk.DrawingArea):
 
         # Widget-space coordinate of the upper left corner of the canvas
         self.draw_pos = numpy.array((0, 0))
-        self.scale = 2
+        self.scale = 20
 
         self.connect("expose_event", self.on_expose)
 
@@ -54,10 +54,6 @@ class SchematicWidget(gtk.DrawingArea):
         for action in self.action_listeners:
             action.register(self)
 
-        #self.add_events(gdk.POINTER_MOTION_MASK)
-        #self.add_events(gdk.BUTTON_PRESS_MASK)
-        #self.add_events(gdk.BUTTON_RELEASE_MASK)
-        #self.add_events(gdk.KEY_PRESS_MASK)
         #TODO: For now, going to listen to all events, since I don't care about
         #      efficiency. Correctness is more important.
         self.add_events(gdk.ALL_EVENTS_MASK)
@@ -81,7 +77,7 @@ class SchematicWidget(gtk.DrawingArea):
         context.translate(*self.draw_pos)
         context.scale(self.scale, self.scale)
 
-        if self.grid_visible and self.scale > 0.8:
+        if self.grid_visible and self.scale > 8:
             self.draw_grid(context, event.area)
         self.schematic.draw(context, selected_entities=(self.selected,))
 
@@ -99,7 +95,7 @@ class SchematicWidget(gtk.DrawingArea):
     def pos_draw_to_widget(self, widget_pos):
         return numpy.array(widget_pos)*self.scale + self.draw_pos
 
-    def draw_grid(self, ctx, rect, step=10, grid_type="dots"):
+    def draw_grid(self, ctx, rect, step=1, grid_type="dots"):
         assert isinstance(step, int)
 
         # Convert rect from widget to draw space
@@ -135,7 +131,7 @@ class SchematicWidget(gtk.DrawingArea):
 
     def draw_grid_dots(self, ctx, rect, step):
         old_line_cap = ctx.get_line_cap()
-        line_width = 0.7
+        line_width = 0.07
 
         start_x = int(rect[0]) - int(rect[0])%step
         start_y = int(rect[1]) - int(rect[1])%step
@@ -346,7 +342,7 @@ class EntityDragAction(BaseDragAction):
         self.start_mouse_pos = widget.pos_widget_to_draw(event.x, event.y)
 
     def on_drag_movement(self, widget, event):
-        GRID_SIZE = 10
+        GRID_SIZE = 1
         mouse_pos = widget.pos_widget_to_draw(event.x, event.y)
         delta = numpy.round((mouse_pos - self.start_mouse_pos) / GRID_SIZE)
         widget.selected.pos = self.start_entity_pos + delta*GRID_SIZE
@@ -373,7 +369,7 @@ class EntityPanAction(BaseAction):
             widget.pan(0, -self.ARROW_KEY_PAN_AMOUNT)
 
 class ZoomAction(BaseAction):
-    ZOOM_AMOUNT = 0.4
+    ZOOM_AMOUNT = 2
 
     def on_scroll(self, widget, event):
         if event.state & gdk.CONTROL_MASK and event.direction in (gdk.SCROLL_UP, gdk.SCROLL_DOWN):

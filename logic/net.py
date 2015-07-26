@@ -6,7 +6,7 @@ class Net(object):
 
     def __init__(self, terminals):
         assert len(terminals) >= 2
-        self.terminals = set()
+        self.terminals = []
         self._output = "float"
 
         for term in terminals:
@@ -15,12 +15,12 @@ class Net(object):
                 if len(term.terminals) != 1:
                     raise ValueError("Components can only be treated as terminals if the component has only one terminal.")
                 term = term.terminals.values()[0]
-            self.terminals.add(term)
+            self.terminals.append(term)
             term.connect(self)
 
     def draw(self, context):
         first_iteration = True
-        context.set_line_width(1.0)
+        context.set_line_width(0.1)
         for term in self.terminals:
             context.save()
 
