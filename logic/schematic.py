@@ -47,18 +47,16 @@ class Schematic(object):
         self.entities.remove(entity)
         #TODO: Disconnect from nets; remove nets that have one connection.
 
-    def connect(self, terminals):
-        for term in terminals:
-            if isinstance(term, logic.Component):
-                # Single terminal component was given
-                if len(term.terminals) != 1:
-                    raise ValueError("Components can only be treated as terminals if the component has only one terminal.")
-                term = term.terminals.values()[0]
-            assert term.component in self.entities
-            if term.net is not None:
-                raise NotImplementedError()  #TODO
+    def connect(self, *items):
+        for i, item in enumerate(items):
 
-        new_net = logic.Net(terminals)
+            if isinstance(item, logic.components.Terminal):
+                assert item.component in self.entities
+
+                if item.net is not None:
+                    raise NotImplementedError()  #TODO
+
+        new_net = logic.Net(items)
         self.nets.add(new_net)
 
     def validate(self):

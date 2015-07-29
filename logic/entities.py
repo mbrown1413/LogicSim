@@ -1,8 +1,10 @@
 
 from __future__ import division
 import math
+import os
 
 import numpy
+import cairo
 
 
 class Entity(object):
@@ -17,6 +19,13 @@ class Entity(object):
         context.translate(*self.pos)
         context.scale(self.scale, self.scale)
         context.rotate(math.radians(self.rot))
+
+    def transform_point(self, point):
+        dummy_surface = cairo.SVGSurface(os.devnull, 0, 0)
+        ctx = cairo.Context(dummy_surface)
+        ctx.identity_matrix()
+        self.transform(ctx)
+        return ctx.user_to_device(point[0], point[1])
 
     def draw(self, context, **kwargs):
         raise NotImplementedError()

@@ -41,7 +41,6 @@ class Terminal(object):
             return
 
         self.net = net
-        net.terminals.append(self)
 
     def disconnect(self):
         if self.net:
@@ -481,10 +480,10 @@ class NotGateComponent(AggregateComponent):
         schematic.add_entities((
             vdd, gnd, io_in, t1, t2, io_out
         ))
-        schematic.connect((vdd, t2['source']))
-        schematic.connect((gnd, t1['drain']))
-        schematic.connect((t1['gate'], io_in, t2['gate']))
-        schematic.connect((io_out, t1['source'], t2['drain']))
+        schematic.connect(vdd, t2['source'])
+        schematic.connect(gnd, t1['drain'])
+        schematic.connect(t1['gate'], io_in, t2['gate'])
+        schematic.connect(io_out, t1['source'], t2['drain'])
 
         super(NotGateComponent, self).__init__(schematic, *args, **kwargs)
 
@@ -523,7 +522,8 @@ class NorGateComponent(AggregateComponent):
         "in2": (-3, 1),
         "out": (3, 0),
     }
-    schematic_scale = 0.14
+    schematic_scale = 0.2
+    schematic_offset = (-.2, .5)
 
     def __init__(self, *args, **kwargs):
         vdd = VddComponent((0, -11))
@@ -540,12 +540,12 @@ class NorGateComponent(AggregateComponent):
         schematic.add_entities((
             vdd, gnd, io_in1, io_in2, io_out, t1, t2, t3, t4
         ))
-        schematic.connect((io_in1, t1['gate'], t3['gate']))
-        schematic.connect((io_in2, t2['gate'], t4['gate']))
-        schematic.connect((vdd, t1['source']))
-        schematic.connect((t1['drain'], t2['source']))
-        schematic.connect((gnd, t3['drain'], t4['drain']))
-        schematic.connect((t2['drain'], t3['source'], t4['source'], io_out))
+        schematic.connect(io_in1, t1['gate'], t3['gate'])
+        schematic.connect(io_in2, t2['gate'], t4['gate'])
+        schematic.connect(vdd, t1['source'])
+        schematic.connect(t1['drain'], t2['source'])
+        schematic.connect(gnd, t3['drain'], t4['drain'])
+        schematic.connect(t2['drain'], t3['source'], t4['source'], io_out)
 
         super(NorGateComponent, self).__init__(schematic, *args, **kwargs)
 
@@ -605,12 +605,12 @@ class NandGateComponent(AggregateComponent):
         schematic.add_entities((
             vdd, gnd, io_in1, io_in2, io_out, t1, t2, t3, t4
         ))
-        schematic.connect((io_in1, t1['gate'], t3['gate']))
-        schematic.connect((io_in2, t2['gate'], t4['gate']))
-        schematic.connect((vdd, t1['source'], t2['source']))
-        schematic.connect((gnd, t3['source']))
-        schematic.connect((t3['drain'], t4['source']))
-        schematic.connect((io_out, t1['drain'], t2['drain'], t4['drain']))
+        schematic.connect(io_in1, t1['gate'], t3['gate'])
+        schematic.connect(io_in2, t2['gate'], t4['gate'])
+        schematic.connect(vdd, t1['source'], t2['source'])
+        schematic.connect(gnd, t3['source'])
+        schematic.connect(t3['drain'], t4['source'])
+        schematic.connect(io_out, t1['drain'], t2['drain'], t4['drain'])
 
         super(NandGateComponent, self).__init__(schematic, *args, **kwargs)
 
@@ -667,10 +667,10 @@ class AndGateComponent(AggregateComponent):
         schematic.add_entities((
             gate_nand, gate_not, io_in1, io_in2, io_out
         ))
-        schematic.connect((gate_nand["in1"], io_in1))
-        schematic.connect((gate_nand["in2"], io_in2))
-        schematic.connect((gate_nand["out"], gate_not["in"]))
-        schematic.connect((gate_not["out"], io_out))
+        schematic.connect(gate_nand["in1"], io_in1)
+        schematic.connect(gate_nand["in2"], io_in2)
+        schematic.connect(gate_nand["out"], gate_not["in"])
+        schematic.connect(gate_not["out"], io_out)
 
         super(AndGateComponent, self).__init__(schematic, *args, **kwargs)
 
@@ -717,10 +717,10 @@ class OrGateComponent(AggregateComponent):
         schematic.add_entities((
             gate_nor, gate_not, io_in1, io_in2, io_out
         ))
-        schematic.connect((gate_nor["in1"], io_in1))
-        schematic.connect((gate_nor["in2"], io_in2))
-        schematic.connect((gate_nor["out"], gate_not["in"]))
-        schematic.connect((gate_not["out"], io_out))
+        schematic.connect(gate_nor["in1"], io_in1)
+        schematic.connect(gate_nor["in2"], io_in2)
+        schematic.connect(gate_nor["out"], gate_not["in"])
+        schematic.connect(gate_not["out"], io_out)
 
         super(OrGateComponent, self).__init__(schematic, *args, **kwargs)
 
@@ -783,18 +783,18 @@ class XorGateComponent(AggregateComponent):
         schematic.add_entities((
             vdd, gnd, not1, not2, in1, in2, out, t1, t2, t3, t4, t5, t6, t7, t8
         ))
-        schematic.connect((vdd, t1['source'], t3['source']))
-        schematic.connect((t1['drain'], t2['source']))
-        schematic.connect((t3['drain'], t4['source']))
-        schematic.connect((gnd, t6['drain'], t8['drain']))
-        schematic.connect((t5['drain'], t6['source']))
-        schematic.connect((t7['drain'], t8['source']))
-        schematic.connect((out, t2['drain'], t4['drain'], t5['source'], t7['source']))
+        schematic.connect(vdd, t1['source'], t3['source'])
+        schematic.connect(t1['drain'], t2['source'])
+        schematic.connect(t3['drain'], t4['source'])
+        schematic.connect(gnd, t6['drain'], t8['drain'])
+        schematic.connect(t5['drain'], t6['source'])
+        schematic.connect(t7['drain'], t8['source'])
+        schematic.connect(out, t2['drain'], t4['drain'], t5['source'], t7['source'])
 
-        schematic.connect((in1, not1['in'], t1['gate'], t5['gate']))
-        schematic.connect((in2, not2['in'], t4['gate'], t6['gate']))
-        schematic.connect((not1['out'], t3['gate'], t7['gate']))
-        schematic.connect((not2['out'], t2['gate'], t8['gate']))
+        schematic.connect(in1, not1['in'], t1['gate'], t5['gate'])
+        schematic.connect(in2, not2['in'], t4['gate'], t6['gate'])
+        schematic.connect(not1['out'], t3['gate'], t7['gate'])
+        schematic.connect(not2['out'], t2['gate'], t8['gate'])
 
         super(XorGateComponent, self).__init__(schematic, *args, **kwargs)
 
@@ -860,18 +860,18 @@ class XnorGateComponent(AggregateComponent):
         schematic.add_entities((
             vdd, gnd, not1, not2, in1, in2, out, t1, t2, t3, t4, t5, t6, t7, t8
         ))
-        schematic.connect((vdd, t1['source'], t3['source']))
-        schematic.connect((t1['drain'], t2['source']))
-        schematic.connect((t3['drain'], t4['source']))
-        schematic.connect((gnd, t6['drain'], t8['drain']))
-        schematic.connect((t5['drain'], t6['source']))
-        schematic.connect((t7['drain'], t8['source']))
-        schematic.connect((out, t2['drain'], t4['drain'], t5['source'], t7['source']))
+        schematic.connect(vdd, t1['source'], t3['source'])
+        schematic.connect(t1['drain'], t2['source'])
+        schematic.connect(t3['drain'], t4['source'])
+        schematic.connect(gnd, t6['drain'], t8['drain'])
+        schematic.connect(t5['drain'], t6['source'])
+        schematic.connect(t7['drain'], t8['source'])
+        schematic.connect(out, t2['drain'], t4['drain'], t5['source'], t7['source'])
 
-        schematic.connect((in1, not1['in'], t1['gate'], t5['gate']))
-        schematic.connect((in2, not2['in'], t2['gate'], t8['gate']))
-        schematic.connect((not1['out'], t3['gate'], t7['gate']))
-        schematic.connect((not2['out'], t4['gate'], t6['gate']))
+        schematic.connect(in1, not1['in'], t1['gate'], t5['gate'])
+        schematic.connect(in2, not2['in'], t2['gate'], t8['gate'])
+        schematic.connect(not1['out'], t3['gate'], t7['gate'])
+        schematic.connect(not2['out'], t4['gate'], t6['gate'])
 
         super(XnorGateComponent, self).__init__(schematic, *args, **kwargs)
 
