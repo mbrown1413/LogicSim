@@ -60,11 +60,13 @@ class Schematic(object):
                 self.remove_net(net)
 
         self.entities.remove(entity)
+        self.update()
 
     def remove_net(self, net):
         assert net in self.nets
         for term in net.terminals:
             term.net = None
+            term.input = None
         self.nets.remove(net)
 
     def connect(self, *items):
