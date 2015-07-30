@@ -67,19 +67,7 @@ def main():
 
 
 
-
-
-    widget = logic.SchematicWidget(schematic)
-
-    window = gtk.Window()
-    window.set_default_size(500, 500)
-    window.add(widget)
-    window.connect("destroy", gtk.main_quit)
-    window.show_all()
-    window.set_title("Logic Simulator")
-
-    widget.pan_to_entities()
-
+    logic.Interface(schematic)
     gtk.main()
 
 if __name__ == "__main__":

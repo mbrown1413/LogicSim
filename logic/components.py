@@ -123,6 +123,7 @@ class Component(logic.Entity):
 
 
 class TransistorComponent(Component):
+    name = "Transistor"
 
     def __init__(self, *args, **kwargs):
         self.pmos = kwargs.pop("pmos", False)
@@ -230,6 +231,7 @@ class SimpleTextComponent(Component):
 
 
 class VddComponent(Component):
+    name = "Vdd"
 
     def __init__(self, *args, **kwargs):
         super(VddComponent, self).__init__(*args, **kwargs)
@@ -263,6 +265,7 @@ class VddComponent(Component):
 
 
 class GndComponent(Component):
+    name = "Gnd"
 
     def __init__(self, *args, **kwargs):
         super(GndComponent, self).__init__(*args, **kwargs)
@@ -300,6 +303,7 @@ class GndComponent(Component):
 
 
 class ProbeComponent(Component):
+    name = "Probe"
 
     def __init__(self, *args, **kwargs):
         super(ProbeComponent, self).__init__(*args, **kwargs)
@@ -338,6 +342,7 @@ class ProbeComponent(Component):
 
 
 class SwitchComponent(Component):
+    name = "Switch"
 
     def __init__(self, *args, **kwargs):
         self.outputs = kwargs.pop('outputs', ("float", "high", "low", "contention"))

@@ -183,6 +183,7 @@ class SchematicWidget(gtk.DrawingArea):
 
     def pan_to_entities(self, entities=None):
         if entities is None: entities = self.schematic.entities
+        if entities is None: return
 
         left = top = float("inf")
         right = bot = float("-inf")
@@ -202,6 +203,15 @@ class SchematicWidget(gtk.DrawingArea):
             rect = gdk.Rectangle(0, 0, w, h)
             self.window.invalidate_rect(rect, True)
             self.window.process_updates(True)
+
+    def add_entity(self, entity, pos=None):
+        if pos == None:
+            _, _, width, height = self.get_allocation()
+            pos = self.pos_widget_to_draw(width/2, height/2)
+        entity.pos = pos
+
+        self.schematic.add_entity(entity)
+        self.post_redraw()
 
 
 class BaseAction(object):
