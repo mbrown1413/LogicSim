@@ -127,6 +127,26 @@ class Net(object):
                     to_visit.add(neighbor)
         assert len(visited) == len(self.nodes)
 
+    def remove(self, to_remove):
+        if isinstance(to_remove, NetNode):
+            idx = self.nodes.index(term)
+        elif isinstance(to_remove, logic.components.Terminal):
+            idx = [n.terminal for n in self.nodes].index(to_remove)
+        else:  # Pos tuple
+            idx = [n.pos for n in self.nodes].index(to_remove)
+        self.nodes.pop(idx)
+
+        # Rewrite neighbor indexes above `idx`
+        for node in self.nodes:
+            to_remove = []
+            for i in range(len(node.neighbors)):
+                if node.neighbors[i] == idx:
+                    to_remove.append(i)
+                elif node.neighbors[i] > idx:
+                    node.neighbors[i] -= 1
+            for r in to_remove[::-1]:
+                node.neighbors.pop(r)
+
     @property
     def terminals(self):
         for node in self.nodes:

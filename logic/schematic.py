@@ -44,8 +44,28 @@ class Schematic(object):
         self.entities.update(entities)
 
     def remove_entity(self, entity):
+        assert entity in self.entities
+
+        # Disconnect terminals from nets
+        modified_nets = set()
+        for term in entity.terminals.itervalues():
+            if term.net:
+                term.net.remove(term)
+                modified_nets.add(term.net)
+                term.net = None
+
+        # Any nets that should be deleted?
+        for net in modified_nets:
+            if len(list(net.terminals)) < 2:
+                self.remove_net(net)
+
         self.entities.remove(entity)
-        #TODO: Disconnect from nets; remove nets that have one connection.
+
+    def remove_net(self, net):
+        assert net in self.nets
+        for term in net.terminals:
+            term.net = None
+        self.nets.remove(net)
 
     def connect(self, *items):
         for i, item in enumerate(items):
