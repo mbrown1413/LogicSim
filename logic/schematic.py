@@ -140,3 +140,9 @@ class Schematic(object):
             right = max(right, x1, x2)
             bot   = max(bot,   y1, y2)
         return (left, top, right-left, bot-top)
+
+    def entity_at_pos(self, pos):
+        for entity in self.entities:
+            if entity.point_intersect(pos):
+                return entity
+        return None

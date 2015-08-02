@@ -168,15 +168,6 @@ class SchematicWidget(gtk.DrawingArea):
         self.scale = max(value, self.MIN_SCALE)
         self.post_redraw()
 
-    def entity_at_pos(self, draw_pos):
-        for entity in self.schematic.entities:
-            if entity.point_intersect(draw_pos):
-                return entity
-        for net in self.schematic.nets:
-            if net.point_intersect(draw_pos):
-                return net
-        return None
-
     def pan(self, delta_x, delta_y):
         self.draw_pos += (delta_x, delta_y)
         self.post_redraw()
@@ -255,7 +246,7 @@ class SelectAction(BaseAction):
 
         if event.button == 1:
             pos = widget.pos_widget_to_draw(event.x, event.y)
-            widget.selected = widget.entity_at_pos(pos)
+            widget.selected = widget.schematic.entity_at_pos(pos)
             widget.post_redraw()
             return True
 
