@@ -23,7 +23,6 @@ def main():
     """
 
     # Two Transistors
-    """
     s1 = logic.components.SwitchComponent((-5, 0))
     vdd = logic.components.VddComponent((1, -5))
     s3 = logic.components.GndComponent((1, 10))
@@ -38,7 +37,6 @@ def main():
     schematic.connect(t1['drain'], t2['source'])
     schematic.connect(t2['drain'], s3)
     schematic.connect(t2['gate'], s4)
-    """
 
     # 1-input Gate
     """
@@ -53,6 +51,7 @@ def main():
     """
 
     # 2-input Gate
+    """
     gate1 = logic.components.NorGateComponent((0, 0))
     s1 = logic.components.SwitchComponent((-8, -2), outputs=('low', 'high'))
     s2 = logic.components.SwitchComponent((-8, 2), outputs=('low', 'high'))
@@ -63,12 +62,13 @@ def main():
     schematic.connect(s1, (-4, -2), (-4, -1), gate1['in1'])
     schematic.connect(s2, (-4,  2), (-4,  1), gate1['in2'])
     schematic.connect(p1, gate1['out'])
+    """
 
 
 
 
-    logic.Interface(schematic)
-    gtk.main()
+    interface = logic.Interface(schematic)
+    interface.run()
 
 if __name__ == "__main__":
     main()
