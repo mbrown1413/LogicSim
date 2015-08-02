@@ -6,6 +6,8 @@ import gtk
 from gtk import gdk
 import cairo
 
+import logic
+
 # There are 2 different coordinate spaces used in SchematicWidget: widget-space
 # and draw-space.
 #
@@ -170,6 +172,9 @@ class SchematicWidget(gtk.DrawingArea):
         for entity in self.schematic.entities:
             if entity.point_intersect(draw_pos):
                 return entity
+        for net in self.schematic.nets:
+            if net.point_intersect(draw_pos):
+                return net
         return None
 
     def pan(self, delta_x, delta_y):
@@ -258,7 +263,7 @@ class DeleteAction(BaseAction):
     parameters = ("key",)
 
     def on_key_press(self, widget, event):
-        if event.keyval == self.key and widget.selected:
+        if event.keyval == self.key and isinstance(widget.selected, logic.Entity):
             widget.schematic.remove_entity(widget.selected)
             widget.selected = None
             widget.post_redraw()
@@ -342,7 +347,7 @@ class PanDragAction(BaseDragAction):
 class EntityDragAction(BaseDragAction):
 
     def should_start_drag(self, widget, event):
-        return widget.selected is not None and \
+        return isinstance(widget.selected, logic.Entity) and \
                widget.selected.point_intersect(
                    widget.pos_widget_to_draw(event.x, event.y)
                )
@@ -417,13 +422,13 @@ class SimpleActions(BaseAction):
             widget.zoom_set(1)
 
         elif event.keyval == ord(' '):  # Activate entity
-            if widget.selected:
+            if isinstance(widget.selected, logic.Entity):
                 widget.selected.on_activate()
                 widget.schematic.update()
                 widget.post_redraw()
 
         elif event.keyval == ord('R'):  # Rotate
-            if widget.selected:
+            if isinstance(widget.selected, logic.Entity):
                 widget.selected.rotate(90)
                 widget.post_redraw()
 

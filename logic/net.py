@@ -1,4 +1,9 @@
 
+from __future__ import division
+import math
+
+import numpy
+
 import logic
 
 
@@ -38,26 +43,39 @@ class Net(object):
     def from_json(cls, schematic):
         pass #TODO
 
-    def draw(self, context):
+    def draw(self, ctx, selected=False):
 
         lines_drawn = set()
         for i, node in enumerate(self.nodes):
             for j in node.neighbors:
                 line = (min(i, j), max(i, j))
                 if line not in lines_drawn:
-                    context.move_to(*node.pos)
-                    context.line_to(*self.nodes[j].pos)
+                    ctx.move_to(*node.pos)
+                    ctx.line_to(*self.nodes[j].pos)
                     lines_drawn.add(line)
 
-        context.set_line_width(0.1)
-        context.set_source_rgb(*{
-            "high": (0, 1, 0),
-            "low": (0, 0, 0),
-            "contention": (1, 0, 0),
-            "float": (0.7, 0.7, 0.7),
-        }[self._output])
+        ctx.set_line_width(0.1)
+        if selected:
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(*{
+                "high": (0, 1, 0),
+                "low": (0, 0, 0),
+                "contention": (1, 0, 0),
+                "float": (0.7, 0.7, 0.7),
+            }[self._output])
+        ctx.stroke()
 
-        context.stroke()
+        if selected:
+            ctx.set_line_width(0.05)
+            ctx.set_source_rgb(0, 0, 0)
+
+            for term in self.terminals:
+                ctx.save()
+                term.component.transform(ctx)
+                ctx.arc(term.pos[0], term.pos[1], 0.1, 0, math.pi*2)
+                ctx.stroke()
+                ctx.restore()
 
     def get_bbox(self):
         left = top = float('inf')
@@ -157,6 +175,42 @@ class Net(object):
     def __str__(self):
         return "<Net {}>".format(' '.join([str(t)[1:-1] for t in self.terminals]))
 
+    def point_intersect(self, point, line_thickness=0.3):
+        point = numpy.array(point)
+
+        closest_dist = float("inf")
+        lines_visited = set()
+        for i, node in enumerate(self.nodes):
+            for j in node.neighbors:
+                line = (min(i, j), max(i, j))
+                if line not in lines_visited:
+                    lines_visited.add(line)
+
+                    node1 = self.nodes[i]
+                    node2 = self.nodes[j]
+                    dist = self._point_dist_to_segment(point, node1, node2)
+                    if dist < closest_dist:
+                        closest_dist = dist
+                    if dist <= line_thickness / 2:
+                        return True
+        return False
+
+    def _point_dist_to_segment(self, point, node1, node2):
+        v1 = numpy.array(node2.pos) - numpy.array(node1.pos)
+        v2 = point - numpy.array(node1.pos)
+
+        # Project v2 onto v1
+        v1_norm = numpy.linalg.norm(v1)
+        v2_norm = numpy.linalg.norm(v2)
+        v1_hat = v1 / v1_norm
+        v2_hat = v2 / v2_norm
+        proj = v1_hat.dot(v2) * v1_hat
+
+        if proj.dot(v1) < 0 or numpy.linalg.norm(proj) > numpy.linalg.norm(v1):
+            return float("inf")
+
+        closest_point = node1.pos + proj
+        return numpy.linalg.norm(closest_point - point)
 
 class NetNode(object):
 

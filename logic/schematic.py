@@ -33,7 +33,7 @@ class Schematic(object):
 
         for net in self.nets:
             context.save()
-            net.draw(context)
+            net.draw(context, net in selected_entities)
             context.restore()
 
     def add_entity(self, entity):
