@@ -263,8 +263,8 @@ class DeleteAction(BaseAction):
     parameters = ("key",)
 
     def on_key_press(self, widget, event):
-        if event.keyval == self.key and isinstance(widget.selected, logic.Entity):
-            widget.schematic.remove_entity(widget.selected)
+        if event.keyval == self.key and widget.selected is not None:
+            widget.schematic.remove(widget.selected)
             widget.selected = None
             widget.post_redraw()
 
@@ -347,7 +347,8 @@ class PanDragAction(BaseDragAction):
 class EntityDragAction(BaseDragAction):
 
     def should_start_drag(self, widget, event):
-        return isinstance(widget.selected, logic.Entity) and \
+        return widget.selected is not None and \
+               widget.selected.draggable and \
                widget.selected.point_intersect(
                    widget.pos_widget_to_draw(event.x, event.y)
                )

@@ -1,8 +1,8 @@
 
 from schematic import Schematic
 from schematicwidget import SchematicWidget
-from net import Net
 from entities import Entity
+from net import Net
 from components import Component
 from interface import Interface
 

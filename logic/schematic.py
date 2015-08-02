@@ -10,7 +10,6 @@ class Schematic(object):
 
     def __init__(self):
         self.entities = set()
-        self.nets = set()
 
     def draw(self, context, selected_entities=(), **kwargs):
         default_draw_connections = kwargs.get('draw_terminals', False)
@@ -31,11 +30,6 @@ class Schematic(object):
             context.stroke()
             """
 
-        for net in self.nets:
-            context.save()
-            net.draw(context, net in selected_entities)
-            context.restore()
-
     def add_entity(self, entity):
         entity.reset()
         self.entities.add(entity)
@@ -43,31 +37,31 @@ class Schematic(object):
     def add_entities(self, entities):
         self.entities.update(entities)
 
-    def remove_entity(self, entity):
+    def remove(self, entity):
         assert entity in self.entities
 
-        # Disconnect terminals from nets
-        modified_nets = set()
-        for term in entity.terminals.itervalues():
-            if term.net:
-                term.net.remove(term)
-                modified_nets.add(term.net)
-                term.net = None
+        if isinstance(entity, logic.Component):
 
-        # Any nets that should be deleted?
-        for net in modified_nets:
-            if len(list(net.terminals)) < 2:
-                self.remove_net(net)
+            # Disconnect terminals from nets
+            modified_nets = set()
+            for term in entity.terminals.itervalues():
+                if term.net:
+                    term.net.remove(term)
+                    modified_nets.add(term.net)
+                    term.net = None
+
+            # Any nets that should be deleted?
+            for net in modified_nets:
+                if len(list(net.terminals)) < 2:
+                    self.remove(net)
+
+        elif isinstance(entity, logic.Net):
+            for term in entity.terminals:
+                term.net = None
+                term.input = None
 
         self.entities.remove(entity)
         self.update()
-
-    def remove_net(self, net):
-        assert net in self.nets
-        for term in net.terminals:
-            term.net = None
-            term.input = None
-        self.nets.remove(net)
 
     def connect(self, *items):
         for i, item in enumerate(items):
@@ -79,35 +73,41 @@ class Schematic(object):
                     raise NotImplementedError()  #TODO
 
         new_net = logic.Net(items)
-        self.nets.add(new_net)
+        self.entities.add(new_net)
+
+    @property
+    def components(self):
+        return filter(lambda e: isinstance(e, logic.Component), self.entities)
+
+    @property
+    def nets(self):
+        return filter(lambda e: isinstance(e, logic.Net), self.entities)
 
     def validate(self):
 
         all_terminals = set()
-        for entity in self.entities:
-            entity.validate()
+        for component in self.components:
+            component.validate()
 
-            if hasattr(entity, 'terminals'):
-                for term in entity.terminals.itervalues():
-                    assert term.net in self.nets or term.net is None
+            if isinstance(component, logic.Component):
+                for term in component.terminals.itervalues():
+                    assert term.net in self.entities or term.net is None
 
-                all_terminals.update(entity.terminals.values())
+                all_terminals.update(component.terminals.values())
 
         for net in self.nets:
-            net.validate()
 
-            for term in net.terminals:
-                assert term in all_terminals
+            if isinstance(net, logic.Net):
+                for term in net.terminals:
+                    assert term in all_terminals
 
     def reset(self):
         for entity in self.entities:
             entity.reset()
-        for net in self.nets:
-            net.reset()
 
     def update(self):
 
-        to_visit = collections.deque(list(self.entities) + list(self.nets))
+        to_visit = collections.deque(self.entities)
         while to_visit:
             item = to_visit.popleft()
 

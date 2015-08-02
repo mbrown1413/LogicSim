@@ -8,6 +8,7 @@ import cairo
 
 
 class Entity(object):
+    draggable = True
 
     def __init__(self, pos=(0, 0), scale=1, rot=0, name=""):
         self.pos = numpy.array(pos)

@@ -7,7 +7,8 @@ import numpy
 import logic
 
 
-class Net(object):
+class Net(logic.Entity):
+    draggable = False
 
     def __init__(self, items):
         self._output = "float"
@@ -43,7 +44,10 @@ class Net(object):
     def from_json(cls, schematic):
         pass #TODO
 
-    def draw(self, ctx, selected=False):
+    def rotate(self, amount):
+        pass
+
+    def draw(self, ctx, selected=False, **kwargs):
 
         lines_drawn = set()
         for i, node in enumerate(self.nodes):
