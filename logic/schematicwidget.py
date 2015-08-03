@@ -26,13 +26,14 @@ class SchematicWidget(gtk.DrawingArea):
     def __init__(self, schematic):
         gtk.DrawingArea.__init__(self)
         self.schematic = schematic
-
-        # Widget-space coordinate of the upper left corner of the canvas
-        self.draw_pos = numpy.array((0, 0))
+        self.draw_pos = numpy.array((0, 0))  # Widget-space coordinate of the
+                                             # upper left corner of the canvas
         self.scale = 20
+        self.grid_size = 1
 
         self.connect("expose_event", self.on_expose)
 
+        # State variables typically modified by action classes
         self.selected = None
         self.dragging = False
         self.grid_visible = True
@@ -51,7 +52,7 @@ class SchematicWidget(gtk.DrawingArea):
 
             # Keyboard Actions
             DeleteAction(key=65535),  # Delete key
-            EntityPanAction(
+            PanAction(
                 left=65361, up=65362, right=65363, down=65364),  # Arrow Keys
             SimpleActions(),  # Catch-all for a lot of simple keypresses
 
@@ -83,7 +84,7 @@ class SchematicWidget(gtk.DrawingArea):
         context.scale(self.scale, self.scale)
 
         if self.grid_visible and self.scale > 8:
-            self.draw_grid(context, event.area)
+            self.draw_grid(context, event.area, self.grid_size)
 
         self.schematic.draw(context,
             selected_entities=(self.selected,),
@@ -107,8 +108,7 @@ class SchematicWidget(gtk.DrawingArea):
     def pos_draw_to_widget(self, widget_pos):
         return numpy.array(widget_pos)*self.scale + self.draw_pos
 
-    def draw_grid(self, ctx, rect, step=1, grid_type="dots"):
-        assert isinstance(step, int)
+    def draw_grid(self, ctx, rect, step, grid_type="dots"):
 
         # Convert rect from widget to draw space
         rect = (
@@ -213,11 +213,19 @@ class SchematicWidget(gtk.DrawingArea):
     def add_entity(self, entity, pos=None):
         if pos == None:
             _, _, width, height = self.get_allocation()
-            pos = self.pos_widget_to_draw(width/2, height/2)
+            pos = self.snap_to_grid(self.pos_widget_to_draw(width/2, height/2))
         entity.pos = pos
 
         self.schematic.add_entity(entity)
         self.post_redraw()
+
+    def snap_to_grid(self, pos, grid_size=None):
+        if grid_size is None:
+            grid_size = self.grid_size
+        return numpy.array((
+            round(pos[0] / self.grid_size) * grid_size,
+            round(pos[1] / self.grid_size) * grid_size,
+        ))
 
 
 class BaseAction(object):
@@ -359,10 +367,9 @@ class EntityDragAction(BaseDragAction):
         self.start_mouse_pos = widget.pos_widget_to_draw(event.x, event.y)
 
     def on_drag_movement(self, widget, event):
-        GRID_SIZE = 1
         mouse_pos = widget.pos_widget_to_draw(event.x, event.y)
-        delta = numpy.round((mouse_pos - self.start_mouse_pos) / GRID_SIZE)
-        widget.selected.pos = self.start_entity_pos + delta*GRID_SIZE
+        delta = mouse_pos - self.start_mouse_pos
+        widget.selected.pos = widget.snap_to_grid(self.start_entity_pos + delta)
 
         widget.post_redraw()
 
@@ -413,7 +420,7 @@ class NetCreateAction(BaseDragAction):
         widget.ghost_entity = None
         widget.post_redraw()
 
-class EntityPanAction(BaseAction):
+class PanAction(BaseAction):
     parameters = ("left", "up", "right", "down",)
 
     ARROW_KEY_PAN_AMOUNT = 10
