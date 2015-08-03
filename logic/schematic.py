@@ -2,6 +2,8 @@
 from __future__ import division
 import collections
 
+import numpy
+
 import logic
 
 
@@ -146,3 +148,19 @@ class Schematic(object):
             if entity.point_intersect(pos):
                 return entity
         return None
+
+    def get_closest_terminal(self, pos, search_dist=float('inf')):
+        pos = numpy.array(pos)
+
+        closest_dist = float('inf')
+        closest_term = None
+        for component in self.components:
+            for term in component.terminals.itervalues():
+                dist = numpy.linalg.norm(term.absolute_pos - pos)
+                if dist <= closest_dist:
+                    closest_dist = dist
+                    closest_term = term
+        if closest_dist > search_dist:
+            return None
+        else:
+            return closest_term

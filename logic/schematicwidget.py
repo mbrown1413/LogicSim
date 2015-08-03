@@ -36,10 +36,13 @@ class SchematicWidget(gtk.DrawingArea):
         self.selected = None
         self.dragging = False
         self.grid_visible = True
+        self.ghost_entity = None  # Drawn, but not actually in schematic
+        self.draw_all_terminals = False
 
         self.action_listeners = (
 
             # Mouse Actions
+            NetCreateAction(mouse_button=1),
             EntityDragAction(mouse_button=1),
             PanDragAction(mouse_button=1),
             SelectAction(mouse_button=1),
@@ -81,7 +84,14 @@ class SchematicWidget(gtk.DrawingArea):
 
         if self.grid_visible and self.scale > 8:
             self.draw_grid(context, event.area)
-        self.schematic.draw(context, selected_entities=(self.selected,))
+
+        self.schematic.draw(context,
+            selected_entities=(self.selected,),
+            draw_terminals=self.draw_all_terminals,
+        )
+
+        if self.ghost_entity:
+            self.ghost_entity.draw(context)
 
         """
         if self.selected:
@@ -360,6 +370,49 @@ class EntityDragAction(BaseDragAction):
         self.start_entity_pos = None
         self.start_mouse_pos = None
 
+class NetCreateAction(BaseDragAction):
+
+    def should_start_drag(self, widget, event):
+        if not isinstance(widget.selected, logic.Component):
+            return False
+
+        draw_pos = widget.pos_widget_to_draw(event.x, event.y)
+        for term in widget.selected.terminals.itervalues():
+            if term.point_intersect(draw_pos):
+                self.component = widget.selected
+                self.start_term = term
+                self.start_pos = term.absolute_pos
+                return True
+
+        return False
+
+    def on_drag_start(self, widget, event):
+        widget.draw_all_terminals = True
+
+    def on_drag_movement(self, widget, event):
+        pos = self.widget.pos_widget_to_draw(event.x, event.y)
+        term = widget.schematic.get_closest_terminal(pos, search_dist=0.5)
+        if term:
+            end_pos = term.absolute_pos
+        else:
+            end_pos = widget.pos_widget_to_draw(event.x, event.y)
+
+        widget.ghost_entity = logic.Net((self.start_pos, end_pos))
+        widget.post_redraw()
+
+    def on_drag_end(self, widget, event):
+        pos = self.widget.pos_widget_to_draw(event.x, event.y)
+        end_term = widget.schematic.get_closest_terminal(pos, search_dist=0.5)
+
+        if end_term and end_term != self.start_term:
+            widget.schematic.connect(self.start_term, end_term)
+            widget.schematic.update()
+            widget.post_redraw()
+
+        widget.draw_all_terminals = False
+        widget.ghost_entity = None
+        widget.post_redraw()
+
 class EntityPanAction(BaseAction):
     parameters = ("left", "up", "right", "down",)
 
@@ -427,7 +480,7 @@ class SimpleActions(BaseAction):
     def on_button_release(self, widget, event):
         if event.button == 2:
             pos = widget.pos_widget_to_draw(event.x, event.y)
-            entity = widget.entity_at_pos(pos)
+            entity = widget.schematic.entity_at_pos(pos)
             if entity:
                 entity.on_activate()
                 widget.schematic.update()

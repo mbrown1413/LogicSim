@@ -51,6 +51,14 @@ class Terminal(object):
         self.output = "float"
         self.input = "float"
 
+    def point_intersect(self, point):
+        dist = numpy.linalg.norm(point - self.absolute_pos)
+        return dist <= 0.16
+
+    @property
+    def absolute_pos(self):
+        return self.component.transform_point(self.pos)
+
     def __str__(self):
         if self.component.name:
             return "<{}[{}]>".format(self.component.name, self.name)
