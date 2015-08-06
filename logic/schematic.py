@@ -65,18 +65,21 @@ class Schematic(object):
         self.entities.remove(entity)
         self.update()
 
-    def connect(self, *items):
-        for item in items:
+    def connect(self, term1, term2):
 
-            if isinstance(item, logic.components.Terminal):
-                assert item.component in self.entities
-
-                if item.net is not None:
-                    item.net.connect(*items)
-                    return
-
-        new_net = logic.Net(items)
-        self.entities.add(new_net)
+        n_disconnected = [term1.net, term2.net].count(None)
+        if n_disconnected == 2:
+            new_net = logic.Net(term1, term2)
+            self.entities.add(new_net)
+        elif n_disconnected == 1 or term1.net == term2.net:
+            if term1.net is None:
+                term1, term2 = term2, term1
+            term1.net.connect(term1, term2)
+        elif n_disconnected == 0:
+            self.entities.remove(term1.net)
+            self.entities.remove(term2.net)
+            new_net = logic.Net.combine(term1.net, term1, term2.net, term2)
+            self.entities.add(new_net)
 
     @property
     def components(self):

@@ -10,7 +10,7 @@ import logic
 class Net(logic.Entity):
     draggable = False
 
-    def __init__(self, items):
+    def __init__(self, *items):
         self._output = "float"
 
         self.nodes = []
@@ -139,15 +139,16 @@ class Net(logic.Entity):
                 assert i in self.nodes[n].neighbors
 
         # No node should be isolated from the others
-        visited = set()
-        to_visit = set([0])
-        while to_visit:
-            n = to_visit.pop()
-            visited.add(n)
-            for neighbor in self.nodes[n].neighbors:
-                if neighbor not in visited:
-                    to_visit.add(neighbor)
-        assert len(visited) == len(self.nodes)
+        if len(self.nodes) > 0:
+            visited = set()
+            to_visit = set([0])
+            while to_visit:
+                n = to_visit.pop()
+                visited.add(n)
+                for neighbor in self.nodes[n].neighbors:
+                    if neighbor not in visited:
+                        to_visit.add(neighbor)
+            assert len(visited) == len(self.nodes)
 
     def remove(self, to_remove):
         if isinstance(to_remove, NetNode):
@@ -170,7 +171,6 @@ class Net(logic.Entity):
                 node.neighbors.pop(r)
 
     def connect(self, *items):
-        assert len(items) >= 2
         node_items = [n.pos_or_terminal for n in self.nodes]
 
         connected_to_orig_nodes = False
@@ -248,6 +248,25 @@ class Net(logic.Entity):
 
         closest_point = node1.pos + proj
         return numpy.linalg.norm(closest_point - point)
+
+    @classmethod
+    def combine(cls, net1, term1, net2, term2):
+        assert term1 in net1.terminals
+        assert term2 in net2.terminals
+        result = Net()
+
+        for node in net1.nodes:
+            new_node = NetNode(node.pos_or_terminal, node.neighbors)
+            result.nodes.append(new_node)
+        for node in net2.nodes:
+            new_neighbors = [n+len(net1.nodes) for n in node.neighbors]
+            new_node = NetNode(node.pos_or_terminal, new_neighbors)
+            result.nodes.append(new_node)
+
+        for term in result.terminals:
+            term.connect(result)
+        result.connect(term1, term2)
+        return result
 
 class NetNode(object):
 

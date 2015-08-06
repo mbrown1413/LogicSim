@@ -404,7 +404,7 @@ class NetCreateAction(BaseDragAction):
         else:
             end_pos = widget.pos_widget_to_draw(event.x, event.y)
 
-        widget.ghost_entity = logic.Net((self.start_pos, end_pos))
+        widget.ghost_entity = logic.Net(self.start_pos, end_pos)
         widget.post_redraw()
 
     def on_drag_end(self, widget, event):
