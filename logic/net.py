@@ -169,6 +169,39 @@ class Net(logic.Entity):
             for r in to_remove[::-1]:
                 node.neighbors.pop(r)
 
+    def connect(self, *items):
+        assert len(items) >= 2
+        node_items = [n.pos_or_terminal for n in self.nodes]
+
+        connected_to_orig_nodes = False
+        prev_node_idx = None
+        for item in items:
+            if item in node_items:
+                connected_to_orig_nodes = True
+                node_idx = node_items.index(item)
+            else:
+                node = NetNode(item, ())
+                self.nodes.append(node)
+                node_idx = len(self.nodes) - 1
+            if prev_node_idx is not None:
+                prev = self.nodes[prev_node_idx]
+                prev.neighbors.append(node_idx)
+                cur = self.nodes[node_idx]
+                cur.neighbors.append(prev_node_idx)
+
+            if isinstance(item, logic.components.Terminal):
+                item.connect(self)
+
+            prev_node_idx = node_idx
+
+        # If these new connections don't connect to the original set of nodes,
+        # we do that here.
+        if not connected_to_orig_nodes:
+            self.nodes[0].neighbors.append(len(self.nodes)-1)
+            self.nodes[-1].append(0)
+
+        self.validate()
+
     @property
     def terminals(self):
         for node in self.nodes:
@@ -227,7 +260,7 @@ class NetNode(object):
             self._pos = pos_or_terminal
             self.terminal = None
 
-        self.neighbors = neighbors
+        self.neighbors = list(neighbors)
 
     @property
     def pos(self):
@@ -235,3 +268,10 @@ class NetNode(object):
             return self._pos
         else:
             return self.terminal.component.transform_point(self.terminal.pos)
+
+    @property
+    def pos_or_terminal(self):
+        if self._pos is not None:
+            return self._pos
+        else:
+            return self.terminal

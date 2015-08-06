@@ -66,13 +66,14 @@ class Schematic(object):
         self.update()
 
     def connect(self, *items):
-        for i, item in enumerate(items):
+        for item in items:
 
             if isinstance(item, logic.components.Terminal):
                 assert item.component in self.entities
 
                 if item.net is not None:
-                    raise NotImplementedError()  #TODO
+                    item.net.connect(*items)
+                    return
 
         new_net = logic.Net(items)
         self.entities.add(new_net)

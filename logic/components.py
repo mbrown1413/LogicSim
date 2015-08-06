@@ -36,16 +36,10 @@ class Terminal(object):
         self.input = "float"
 
     def connect(self, net):
-        self.disconnect()
         if net is None:
             return
 
         self.net = net
-
-    def disconnect(self):
-        if self.net:
-            self.net.remove(self)
-        self.net = None
 
     def reset(self):
         self.output = "float"
