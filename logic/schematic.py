@@ -65,21 +65,46 @@ class Schematic(object):
         self.entities.remove(entity)
         self.update()
 
-    def connect(self, term1, term2):
+    def connect(self, *terms):
+        net = None
+        for i in range(1, len(terms)):
+            net = self._connect2(terms[i], terms[i-1], net)
 
-        n_disconnected = [term1.net, term2.net].count(None)
+    def _connect2(self, term1, term2, net=None):
+
+        def get_term_and_net(term):
+            if isinstance(term, logic.Component):
+                assert len(term.terminals) == 1
+                term = term.terminals.values()[0]
+
+            if isinstance(term, logic.components.Terminal):
+                return term, term.net
+            elif isinstance(term, tuple):
+                return term, None
+            else:
+                assert False
+
+        term1, net1 = get_term_and_net(term1)
+        term2, net2 = get_term_and_net(term2)
+
+        n_disconnected = [net1, net2].count(None)
+
         if n_disconnected == 2:
-            new_net = logic.Net(term1, term2)
-            self.entities.add(new_net)
-        elif n_disconnected == 1 or term1.net == term2.net:
-            if term1.net is None:
-                term1, term2 = term2, term1
-            term1.net.connect(term1, term2)
+            if net is None:
+                net = logic.Net(term1, term2)
+                self.entities.add(net)
+            else:
+                 net.connect(term1, term2)
+            return net
+        elif n_disconnected == 1 or net1 == net2:
+            net.connect(term1, term2)
+            return net
         elif n_disconnected == 0:
-            self.entities.remove(term1.net)
-            self.entities.remove(term2.net)
-            new_net = logic.Net.combine(term1.net, term1, term2.net, term2)
+            self.entities.remove(net1)
+            self.entities.remove(net2)
+            new_net = logic.Net.combine(net1, term1, net2, term2)
             self.entities.add(new_net)
+            return new_net
 
     @property
     def components(self):
