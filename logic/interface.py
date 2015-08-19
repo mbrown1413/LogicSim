@@ -22,6 +22,10 @@ class Interface(gtk.Window):
                 ("Save", lambda _: None),
                 ("Exit", gtk.main_quit),
             ))),
+            ("View", OrderedDict((
+                ("Grid Size +", lambda _: self.schematic_widget.grid_size_up()),
+                ("Grid Size -", lambda _: self.schematic_widget.grid_size_down()),
+            ))),
             ("Add", OrderedDict()),  # Filled in later automatically
         ))
 

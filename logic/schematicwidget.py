@@ -83,7 +83,10 @@ class SchematicWidget(gtk.DrawingArea):
         context.translate(*self.draw_pos)
         context.scale(self.scale, self.scale)
 
-        if self.grid_visible and self.scale > 8:
+        # Draw grid, but only if it's not too costly
+        draw_area = event.area[2]*event.area[3] / self.scale**2
+        n_grid_points = draw_area / self.grid_size**2
+        if n_grid_points < 5000:
             self.draw_grid(context, event.area, self.grid_size)
 
         self.schematic.draw(context,
@@ -108,7 +111,8 @@ class SchematicWidget(gtk.DrawingArea):
     def pos_draw_to_widget(self, widget_pos):
         return numpy.array(widget_pos)*self.scale + self.draw_pos
 
-    def draw_grid(self, ctx, rect, step, grid_type="dots"):
+    def draw_grid(self, ctx, rect, step):
+        line_width = 0.07 * step
 
         # Convert rect from widget to draw space
         rect = (
@@ -117,46 +121,20 @@ class SchematicWidget(gtk.DrawingArea):
             rect[2] / self.scale, rect[3] / self.scale
         )
 
-        {
-            "dots": self.draw_grid_dots,
-            "lines": self.draw_grid_lines,
-        }[grid_type](ctx, rect, step)
-
-    def draw_grid_lines(self, ctx, rect, step):
-        line_width = 0.3
-
-        # Vertical Lines
-        start_x = int(rect[0]) - int(rect[0])%step
-        for x in numpy.arange(start_x, rect[0]+rect[2]+line_width, step):
-            ctx.move_to(x, rect[1])
-            ctx.line_to(x, rect[1]+rect[3])
-
-        # Horizontal Lines
-        start_y = int(rect[1]) - int(rect[1])%step
-        for y in numpy.arange(start_y, rect[1]+rect[3]+line_width, step):
-            ctx.move_to(rect[0], y)
-            ctx.line_to(rect[0]+rect[2], y)
-
-        ctx.set_line_width(line_width)
-        ctx.set_source_rgb(0, 1.0, 0)
-        ctx.stroke()
-
-    def draw_grid_dots(self, ctx, rect, step):
-        old_line_cap = ctx.get_line_cap()
-        line_width = 0.07
-
-        start_x = int(rect[0]) - int(rect[0])%step
-        start_y = int(rect[1]) - int(rect[1])%step
+        start_x = int(rect[0] / self.grid_size) * self.grid_size
+        start_y = int(rect[1] / self.grid_size) * self.grid_size
         x_range = numpy.arange(start_x, rect[0]+rect[2]+line_width, step)
         y_range = numpy.arange(start_y, rect[1]+rect[3]+line_width, step)
+
         for x in x_range:
             for y in y_range:
                 ctx.move_to(x, y)
                 ctx.line_to(x, y)
 
+        old_line_cap = ctx.get_line_cap()
         ctx.set_line_cap(cairo.LINE_CAP_ROUND)
         ctx.set_line_width(line_width)
-        ctx.set_source_rgb(0, 0.0, 0)
+        ctx.set_source_rgb(0, 0, 0)
         ctx.stroke()
 
         ctx.set_line_cap(old_line_cap)
@@ -226,6 +204,14 @@ class SchematicWidget(gtk.DrawingArea):
             round(pos[0] / self.grid_size) * grid_size,
             round(pos[1] / self.grid_size) * grid_size,
         ))
+
+    def grid_size_up(self):
+        self.grid_size *= 2
+        self.post_redraw()
+
+    def grid_size_down(self):
+        self.grid_size /= 2
+        self.post_redraw()
 
 
 class BaseAction(object):
