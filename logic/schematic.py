@@ -17,18 +17,19 @@ class Schematic(object):
         default_draw_connections = kwargs.get('draw_terminals', False)
 
         for entity in self.entities:
-            context.save()
             if entity in selected_entities:
                 kwargs['draw_terminals'] = True
             else:
                 kwargs['draw_terminals'] = default_draw_connections
+
+            context.save()
             entity.draw(context, selected=entity in selected_entities, **kwargs)
             context.restore()
 
             """
             context.rectangle(*entity.get_bbox())
-            context.set_source_rgb(0, 1, 0)
-            context.set_line_width(2)
+            context.set_source_rgb(0, 1, 1)
+            context.set_line_width(.2)
             context.stroke()
             """
 

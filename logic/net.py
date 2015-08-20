@@ -11,6 +11,7 @@ class Net(logic.Entity):
     draggable = False
 
     def __init__(self, *items):
+        super(Net, self).__init__()
         self._output = "float"
 
         self.nodes = []
@@ -89,7 +90,7 @@ class Net(logic.Entity):
             top = min(top, node.pos[1])
             right = max(right, node.pos[0])
             bot = max(bot, node.pos[1])
-        return (left, top, right-left, bot-left)
+        return (left, top, right-left, bot-top)
 
     def update(self):
 
@@ -286,7 +287,7 @@ class NetNode(object):
         if self._pos is not None:
             return self._pos
         else:
-            return self.terminal.component.transform_point(self.terminal.pos)
+            return self.terminal.component.point_schematic_to_object(self.terminal.pos)
 
     @property
     def pos_or_terminal(self):

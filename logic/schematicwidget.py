@@ -205,13 +205,14 @@ class SchematicWidget(gtk.DrawingArea):
             round(pos[1] / self.grid_size) * grid_size,
         ))
 
-    def grid_size_up(self):
-        self.grid_size *= 2
+    def change_grid_size(self, factor):
+        self.grid_size *= factor
         self.post_redraw()
 
-    def grid_size_down(self):
-        self.grid_size /= 2
-        self.post_redraw()
+    def change_entity_scale(self, factor):
+        if isinstance(self.selected, logic.Entity):
+            self.selected.scale *= factor
+            self.post_redraw()
 
 
 class BaseAction(object):

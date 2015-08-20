@@ -9,22 +9,6 @@ import numpy
 import logic
 
 
-def rot_bbox_decorator(func):
-    def wrap(self):
-        result = func(self)
-        if self.rot % 180 == 90:
-            return (
-                result[0] + result[2]/2 - result[3]/2,
-                result[1] + result[3]/2 - result[2]/2,
-                result[3], result[2]
-            )
-        elif self.rot % 180 == 0:
-            return result
-        else:
-            raise NotImplementedError()
-    return wrap
-
-
 class Terminal(object):
 
     def __init__(self, component, name, pos, net=None, output="float"):
@@ -51,7 +35,7 @@ class Terminal(object):
 
     @property
     def absolute_pos(self):
-        return self.component.transform_point(self.pos)
+        return self.component.point_schematic_to_object(self.pos)
 
     def __str__(self):
         if self.component.name:
@@ -179,10 +163,9 @@ class TransistorComponent(Component):
         ctx.line_to(1, -2)
         ctx.stroke()
 
-    @rot_bbox_decorator
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -1+self.pos[0], -2+self.pos[1],
+            -1, -2,
             2, 4
         )
 
@@ -225,10 +208,8 @@ class SimpleTextComponent(Component):
         ctx.show_text(self.text)
         ctx.stroke()
 
-    def get_bbox(self):
-        #TODO: Broke when rotated
-        return (self.pos[0]-self.text_width/2,
-                self.pos[1]-self.text_height,
+    def _get_bbox(self):
+        return (-self.text_width/2, -self.text_height,
                 self.text_width, self.text_height)
 
 
@@ -259,9 +240,9 @@ class VddComponent(Component):
 
         ctx.stroke()
 
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -0.5+self.pos[0], -.75+self.pos[1],
+            -0.5, -.75,
             1, 1.75
         )
 
@@ -297,9 +278,9 @@ class GndComponent(Component):
 
         ctx.stroke()
 
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -.75+self.pos[0], -1+self.pos[1],
+            -.75, -1,
             1.5, 1.5
         )
 
@@ -330,17 +311,15 @@ class ProbeComponent(Component):
         ctx.arc(0, 0, self.r-0.05, 0, 2*math.pi)
         ctx.fill()
 
-    @rot_bbox_decorator
-    def get_bbox(self):
+    def _get_bbox(self):
         r = self.r + 0.1
         return (
-            self.pos[0] - r,
-            self.pos[1] - r,
+            -r, -r,
             r*2, r*2
         )
 
-    def point_intersect(self, point):
-        return numpy.square(point - self.pos).sum() <= self.r**2
+    def _point_intersect(self, point):
+        return numpy.square(point).sum() <= self.r**2
 
 
 class SwitchComponent(Component):
@@ -376,9 +355,8 @@ class SwitchComponent(Component):
         ctx.rectangle(-self.width/2, -self.height/2, self.width, self.height)
         ctx.stroke()
 
-    @rot_bbox_decorator
-    def get_bbox(self):
-        return (self.pos[0]-self.width/2, self.pos[1]-self.height/2,
+    def _get_bbox(self):
+        return (-self.width/2, -self.height/2,
                 self.width, self.height)
 
     def reset(self):
@@ -393,8 +371,10 @@ class IOComponent(Component):
         super(IOComponent, self).__init__(*args, **kwargs)
         self.add_terminal("term", (0, 0))
 
-    def get_bbox(self):
-        return (self.pos[0], self.pos[1], 0, 0)
+    def _get_bbox(self):
+        return (0, 0, 0, 0)
+
+    #TODO: Make this an actually drawn, editable component
 
 
 class AggregateComponent(Component):
@@ -439,14 +419,8 @@ class AggregateComponent(Component):
 
         ctx.restore()
 
-    def get_bbox(self):
-        bbox = self.schematic.get_bbox()
-        return (
-            bbox[0]+self.pos[0],
-            bbox[1]+self.pos[1],
-            bbox[2],
-            bbox[3],
-        )
+    def _get_bbox(self):
+        return self.schematic.get_bbox()
 
     def validate(self):
         self.schematic.validate()
@@ -516,9 +490,9 @@ class NotGateComponent(AggregateComponent):
         ctx.line_to(2, 0)
         ctx.stroke()
 
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -2+self.pos[0], -1+self.pos[1],
+            -2, -1,
             4, 2
         )
 
@@ -583,9 +557,9 @@ class NorGateComponent(AggregateComponent):
         ctx.arc(2.25, 0, 0.15, 0, 2*math.pi)
         ctx.stroke()
 
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -3+self.pos[0], -2+self.pos[1],
+            -3, -2,
             6, 4
         )
 
@@ -649,9 +623,9 @@ class NandGateComponent(AggregateComponent):
         ctx.stroke()
 
 
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -3+self.pos[0], -2+self.pos[1],
+            -3, -2,
             6, 4
         )
 
@@ -755,9 +729,9 @@ class OrGateComponent(AggregateComponent):
 
         ctx.stroke()
 
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -3+self.pos[0], -2+self.pos[1],
+            -3, -2,
             6, 4
         )
 
@@ -832,9 +806,9 @@ class XorGateComponent(AggregateComponent):
 
         ctx.stroke()
 
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -3+self.pos[0], -2+self.pos[1],
+            -3, -2,
             6, 4
         )
 
@@ -912,8 +886,8 @@ class XnorGateComponent(AggregateComponent):
         ctx.arc(2.25, 0, 0.15, 0, 2*math.pi)
         ctx.stroke()
 
-    def get_bbox(self):
+    def _get_bbox(self):
         return (
-            -3+self.pos[0], -2+self.pos[1],
+            -3, -2,
             6, 4
         )

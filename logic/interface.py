@@ -23,10 +23,14 @@ class Interface(gtk.Window):
                 ("Exit", gtk.main_quit),
             ))),
             ("View", OrderedDict((
-                ("Grid Size +", lambda _: self.schematic_widget.grid_size_up()),
-                ("Grid Size -", lambda _: self.schematic_widget.grid_size_down()),
+                ("Grid Size +", lambda _: self.schematic_widget.change_grid_size(2)),
+                ("Grid Size -", lambda _: self.schematic_widget.change_grid_size(0.5)),
             ))),
             ("Add", OrderedDict()),  # Filled in later automatically
+            ("Entity", OrderedDict((
+                ("Size +", lambda _: self.schematic_widget.change_entity_scale(2)),
+                ("Size -", lambda _: self.schematic_widget.change_entity_scale(0.5)),
+            ))),
         ))
 
         entity_classes = (
