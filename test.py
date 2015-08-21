@@ -23,6 +23,7 @@ def main():
     """
 
     # Two Transistors
+    """
     s1 = logic.components.SwitchComponent((-5, 0))
     vdd = logic.components.VddComponent((1, -5))
     s3 = logic.components.GndComponent((1, 10))
@@ -37,6 +38,7 @@ def main():
     schematic.connect(t1['drain'], t2['source'])
     schematic.connect(t2['drain'], s3)
     schematic.connect(t2['gate'], s4)
+    """
 
     # 1-input Gate
     """
@@ -49,6 +51,50 @@ def main():
     schematic.connect(s1, gate['in'])
     schematic.connect(p1, gate['out'])
     """
+
+    schematic = logic.Schematic.from_json("""
+    {
+        "entities": [
+            {
+                "type": "Vdd",
+                "name": "vdd",
+                "pos": [0, -4]
+            }, {
+                "type": "Probe",
+                "name": "p1",
+                "pos": [0, 4]
+            }, {
+                "type": "Switch",
+                "name": "s1",
+                "pos": [-4, 0]
+            }, {
+                "type": "Transistor",
+                "name": "t1",
+                "pos": [-1, 0]
+            }
+        ],
+        "nets": [
+            {
+                "nodes": [
+                    {"location": "s1", "neighbors": [1]},
+                    {"location": "t1[gate]", "neighbors": [0]}
+                ]
+            }, {
+                "nodes": [
+                    {"location": "vdd", "neighbors": [1]},
+                    {"location": "t1[source]", "neighbors": [0]}
+                ]
+            }, {
+                "nodes": [
+                    {"location": "p1", "neighbors": [1]},
+                    {"location": "t1[drain]", "neighbors": [0]}
+                ]
+            }
+        ]
+    }
+    """)
+    #gate = logic.components.NotGateComponent((0, 0))
+    #schematic.add_entity(gate)
 
     # 2-input Gate
     """

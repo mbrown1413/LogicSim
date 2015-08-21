@@ -10,11 +10,13 @@ import cairo
 class Entity(object):
     draggable = True
 
-    def __init__(self, pos=(0, 0), scale=1, rot=0, name=""):
+    def __init__(self, pos=(0, 0), scale=1, rot=0, name=None, line_width=0.1):
         self.pos = numpy.array(pos)
         self.scale = scale
         self.rot = rot
         self.name = name
+        self.line_width = line_width
+        self.terminals = {}
 
     def transform(self, context):
         context.translate(*self.pos)
@@ -57,8 +59,12 @@ class Entity(object):
             max(ys) - min(ys),
         )
 
-    def draw(self, context, **kwargs):
-        raise NotImplementedError()
+    def set_draw_settings(self, ctx, **kwargs):
+        if kwargs.get('selected', False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+        ctx.set_line_width(self.line_width)
 
     def get_bbox(self):
         """Gets bounding box in schematic space.
@@ -89,41 +95,83 @@ class Entity(object):
     def rotate(self, degrees):
         self.rot = (self.rot + degrees) % 360
 
-    def validate(self):
-        pass
-
-    def on_activate(self):
-        pass
-
     def __str__(self):
         name_str = ""
         if self.name:
             name_str = ' "{}"'.format(self.name)
         return "<{}{}>".format(self.__class__.__name__, name_str)
 
+    def get_json_dict(self):
+        raise NotImplementedError()  #TODO
 
-class TestEntity(Entity):
+    def get_output_dict(self):
+        return None
+
+    def draw(self, context, **kwargs):
+        pass
+
+    def validate(self):
+        pass
+
+    def on_activate(self):
+        pass
+
+    def update(self):
+        pass
+
+    def reset(self):
+        pass
+
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
+
+class LinesEntity(Entity):
 
     def __init__(self, *args, **kwargs):
-        super(TestEntity, self).__init__(*args, **kwargs)
-        self.r = 5
+        self.points = kwargs.pop('points')
+        super(LinesEntity, self).__init__(*args, **kwargs)
 
     def draw(self, ctx, **kwargs):
         self.transform(ctx)
-        ctx.arc(0, 0, self.r, 0, 2*math.pi)
-        if kwargs.get("selected", False):
-            ctx.set_source_rgb(0, 0, 1)
-        else:
-            ctx.set_source_rgb(0, 0, 0)
+        self.set_draw_settings(ctx, **kwargs)
+
+        ctx.move_to(*self.points[0])
+        for point in self.points[1:]:
+            ctx.line_to(*point)
         ctx.stroke()
 
-    def get_bbox(self):
-        r = self.r + 1
+    def _get_bbox(self):
+        xs = map(lambda p: p[0], self.points)
+        ys = map(lambda p: p[1], self.points)
         return (
-            self.pos[0] - r,
-            self.pos[1] - r,
-            r*2, r*2
+            min(xs), min(ys),
+            max(xs)-min(xs), max(ys)-min(ys)
         )
 
-    def point_intersect(self, point):
-        return numpy.square(point - self.pos).sum() <= self.r**2
+
+class CircleEntity(Entity):
+
+    def __init__(self, *args, **kwargs):
+        self.center = kwargs.pop('center')
+        self.radius = kwargs.pop('radius')
+        super(CircleEntity, self).__init__(*args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        super(LineEntity, self).draw(ctx, **kwargs)
+
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+
+        ctx.arc(self.center[0], self.center[1], self.radius, 0, math.pi*2)
+        ctx.stroke()
+
+    def _get_bbox(self):
+        points = (point1, point2)
+        xs = map(lambda p: p[0], points)
+        ys = map(lambda p: p[1], points)
+        return (
+            min(xs), min(ys),
+            max(xs)-min(xs), max(ys)-min(ys)
+        )

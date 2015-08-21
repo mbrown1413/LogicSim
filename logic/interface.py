@@ -33,22 +33,22 @@ class Interface(gtk.Window):
             ))),
         ))
 
-        entity_classes = (
-            logic.components.TransistorComponent,
-            logic.components.VddComponent,
-            logic.components.GndComponent,
-            logic.components.ProbeComponent,
-            logic.components.SwitchComponent,
-        )
+        entity_classes = {
+            "Transistor": logic.components.TransistorComponent,
+            "Vdd": logic.components.VddComponent,
+            "Gnd": logic.components.GndComponent,
+            "Probe": logic.components.ProbeComponent,
+            "Switch": logic.components.SwitchComponent,
+        }
         def new_entity_func(menu):
             cls_name = menu.get_label()
             #TODO: Wow... talk about inefficient
-            for cls in entity_classes:
-                if cls.name == cls_name:
+            for name, cls in entity_classes.iteritems():
+                if name == cls_name:
                     self.schematic_widget.add_entity(cls())
                     break
-        for entity_cls in entity_classes:
-            menu_description["Add"][entity_cls.name] = new_entity_func
+        for name, entity_cls in entity_classes.iteritems():
+            menu_description["Add"][name] = new_entity_func
 
         self.menu_bar = gtk.MenuBar()
         for menu_name, menu_dict in menu_description.iteritems():

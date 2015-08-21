@@ -74,13 +74,6 @@ class Component(logic.Entity):
     def get_output_dict(self):
         return {name: term.output for name, term in self.terminals.iteritems()}
 
-    def set_draw_settings(self, ctx, **kwargs):
-        if kwargs.get('selected', False):
-            ctx.set_source_rgb(0, 0, 1)
-        else:
-            ctx.set_source_rgb(0, 0, 0)
-        ctx.set_line_width(0.1)
-
     def draw(self, ctx, **kwargs):
         if not kwargs.get('draw_terminals', False):
             return
@@ -109,7 +102,6 @@ class Component(logic.Entity):
 
 
 class TransistorComponent(Component):
-    name = "Transistor"
 
     def __init__(self, *args, **kwargs):
         self.pmos = kwargs.pop("pmos", False)
@@ -214,7 +206,6 @@ class SimpleTextComponent(Component):
 
 
 class VddComponent(Component):
-    name = "Vdd"
 
     def __init__(self, *args, **kwargs):
         super(VddComponent, self).__init__(*args, **kwargs)
@@ -248,7 +239,6 @@ class VddComponent(Component):
 
 
 class GndComponent(Component):
-    name = "Gnd"
 
     def __init__(self, *args, **kwargs):
         super(GndComponent, self).__init__(*args, **kwargs)
@@ -259,8 +249,6 @@ class GndComponent(Component):
         self['gnd'].output = "low"
 
     def draw(self, ctx, **kwargs):
-        super(GndComponent, self).draw(ctx, **kwargs)
-
         self.transform(ctx)
         self.set_draw_settings(ctx, **kwargs)
 
@@ -277,6 +265,7 @@ class GndComponent(Component):
         ctx.line_to(0.25, 0.5)
 
         ctx.stroke()
+        super(GndComponent, self).draw(ctx, **kwargs)
 
     def _get_bbox(self):
         return (
@@ -286,7 +275,6 @@ class GndComponent(Component):
 
 
 class ProbeComponent(Component):
-    name = "Probe"
 
     def __init__(self, *args, **kwargs):
         super(ProbeComponent, self).__init__(*args, **kwargs)
@@ -310,6 +298,7 @@ class ProbeComponent(Component):
         }[self["term"].input])
         ctx.arc(0, 0, self.r-0.05, 0, 2*math.pi)
         ctx.fill()
+        super(ProbeComponent, self).draw(ctx, **kwargs)
 
     def _get_bbox(self):
         r = self.r + 0.1
@@ -323,7 +312,6 @@ class ProbeComponent(Component):
 
 
 class SwitchComponent(Component):
-    name = "Switch"
 
     def __init__(self, *args, **kwargs):
         self.outputs = kwargs.pop('outputs', ("float", "high", "low", "contention"))
@@ -355,6 +343,8 @@ class SwitchComponent(Component):
         ctx.rectangle(-self.width/2, -self.height/2, self.width, self.height)
         ctx.stroke()
 
+        super(SwitchComponent, self).draw(ctx, **kwargs)
+
     def _get_bbox(self):
         return (-self.width/2, -self.height/2,
                 self.width, self.height)
@@ -376,6 +366,12 @@ class IOComponent(Component):
 
     #TODO: Make this an actually drawn, editable component
 
+
+
+
+######################################################
+#TODO: Everything below will be removed in due time...
+######################################################
 
 class AggregateComponent(Component):
     io_positions = {}

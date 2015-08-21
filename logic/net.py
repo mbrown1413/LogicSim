@@ -11,8 +11,10 @@ class Net(logic.Entity):
     draggable = False
 
     def __init__(self, *items):
-        super(Net, self).__init__()
         self._output = "float"
+        self.name = None  #XXX: This is a hack for now. Either: call
+                          #     Entity.__init__ here, or make Net not a
+                          #     subclass of Entity.
 
         self.nodes = []
         for i, item in enumerate(items):
@@ -39,11 +41,10 @@ class Net(logic.Entity):
 
             self.nodes.append(node)
 
-        self.validate()
+        for term in self.terminals:
+            term.net = self
 
-    @classmethod
-    def from_json(cls, schematic):
-        pass #TODO
+        self.validate()
 
     def rotate(self, amount):
         pass

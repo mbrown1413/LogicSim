@@ -1,10 +1,16 @@
 
 from __future__ import division
 import collections
+import json
+import re
 
 import numpy
 
 import logic
+
+
+# Matches "component[term]" or just "component"
+term_re = re.compile(r"^([^[]+)(\[([^\]]+)\])?$")
 
 
 class Schematic(object):
@@ -148,7 +154,7 @@ class Schematic(object):
                 if was_updated:
                     to_visit.extend(set([term.component for term in item.terminals]))
 
-            elif isinstance(item, logic.Component):
+            elif isinstance(item, logic.Entity):
                 prev_term_outs = item.get_output_dict()
                 item.update()
                 cur_term_outs = item.get_output_dict()
@@ -194,3 +200,40 @@ class Schematic(object):
             return None
         else:
             return closest_term
+
+    def get_entity_by_name(self, name):
+        #TODO: Optimize
+        for entity in self.entities:
+            if entity.name == name:
+                return entity
+        return None
+
+    @classmethod
+    def from_json(cls, json_str, entity_lib=None):
+        data = json.loads(json_str)
+        s = cls()
+
+        for desc in data.get('entities', ()):
+            entity_cls = logic.entity_registry[desc.pop('type')]
+            entity = entity_cls.from_json(desc)
+            s.add_entity(entity)
+
+        def node_from_dict(d):
+            if isinstance(d['location'], list):
+                loc = d['location']
+            elif isinstance(d['location'], basestring):
+                match = term_re.match(d['location'])
+                component = s.get_entity_by_name(match.group(1))
+                assert component is not None
+                if match.group(3):
+                    loc = component[match.group(3)]
+                else:
+                    assert len(component.terminals) == 1
+                    loc = component.terminals.values()[0]
+            return logic.net.NetNode(loc, d['neighbors'])
+
+        for desc in data.get('nets', ()):
+            net = logic.Net(*map(node_from_dict, desc['nodes']))
+            s.entities.add(net)
+
+        return s
