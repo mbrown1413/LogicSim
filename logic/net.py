@@ -7,23 +7,20 @@ import numpy
 import logic
 
 
-class Net(logic.Entity):
+class Net(object):
     draggable = False
 
     def __init__(self, *items):
         self._output = "float"
-        self.name = None  #XXX: This is a hack for now. Either: call
-                          #     Entity.__init__ here, or make Net not a
-                          #     subclass of Entity.
 
         self.nodes = []
         for i, item in enumerate(items):
 
-            # Replace 1-terminal components with that terminal
-            if isinstance(item, logic.Component):
+            # Replace 1-terminal parts with that terminal
+            if isinstance(item, logic.Part):
                 if len(item.terminals) != 1:
-                    raise ValueError("Components can only be treated as "
-                            "terminals if the component has only one terminal.")
+                    raise ValueError("Parts can only be treated as "
+                            "terminals if the part has only one terminal.")
                 item = item.terminals.values()[0]
 
             if isinstance(item, NetNode):
@@ -36,7 +33,7 @@ class Net(logic.Entity):
                     neighbors.append(i+1)
                 node = NetNode(item, neighbors)
 
-                if isinstance(item, logic.components.Terminal):
+                if isinstance(item, logic.Terminal):
                     item.connect(self)
 
             self.nodes.append(node)
@@ -45,9 +42,6 @@ class Net(logic.Entity):
             term.net = self
 
         self.validate()
-
-    def rotate(self, amount):
-        pass
 
     def draw(self, ctx, selected=False, **kwargs):
 
@@ -78,7 +72,7 @@ class Net(logic.Entity):
 
             for term in self.terminals:
                 ctx.save()
-                term.component.transform(ctx)
+                term.part.transform(ctx)
                 ctx.arc(term.pos[0], term.pos[1], 0.1, 0, math.pi*2)
                 ctx.stroke()
                 ctx.restore()
@@ -155,7 +149,7 @@ class Net(logic.Entity):
     def remove(self, to_remove):
         if isinstance(to_remove, NetNode):
             idx = self.nodes.index(term)
-        elif isinstance(to_remove, logic.components.Terminal):
+        elif isinstance(to_remove, logic.Terminal):
             idx = [n.terminal for n in self.nodes].index(to_remove)
         else:  # Pos tuple
             idx = [n.pos for n in self.nodes].index(to_remove)
@@ -191,7 +185,7 @@ class Net(logic.Entity):
                 cur = self.nodes[node_idx]
                 cur.neighbors.append(prev_node_idx)
 
-            if isinstance(item, logic.components.Terminal):
+            if isinstance(item, logic.Terminal):
                 item.connect(self)
 
             prev_node_idx = node_idx
@@ -273,7 +267,7 @@ class Net(logic.Entity):
 class NetNode(object):
 
     def __init__(self, pos_or_terminal, neighbors):
-        if isinstance(pos_or_terminal, logic.components.Terminal):
+        if isinstance(pos_or_terminal, logic.Terminal):
             self._pos = None
             self.terminal = pos_or_terminal
         else:
@@ -288,7 +282,7 @@ class NetNode(object):
         if self._pos is not None:
             return self._pos
         else:
-            return self.terminal.component.point_schematic_to_object(self.terminal.pos)
+            return self.terminal.part.point_schematic_to_object(self.terminal.pos)
 
     @property
     def pos_or_terminal(self):

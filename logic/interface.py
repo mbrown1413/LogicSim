@@ -27,28 +27,28 @@ class Interface(gtk.Window):
                 ("Grid Size -", lambda _: self.schematic_widget.change_grid_size(0.5)),
             ))),
             ("Add", OrderedDict()),  # Filled in later automatically
-            ("Entity", OrderedDict((
-                ("Size +", lambda _: self.schematic_widget.change_entity_scale(2)),
-                ("Size -", lambda _: self.schematic_widget.change_entity_scale(0.5)),
+            ("Part", OrderedDict((
+                ("Size +", lambda _: self.schematic_widget.change_part_scale(2)),
+                ("Size -", lambda _: self.schematic_widget.change_part_scale(0.5)),
             ))),
         ))
 
-        entity_classes = {
-            "Transistor": logic.components.TransistorComponent,
-            "Vdd": logic.components.VddComponent,
-            "Gnd": logic.components.GndComponent,
-            "Probe": logic.components.ProbeComponent,
-            "Switch": logic.components.SwitchComponent,
+        part_classes = {
+            "Transistor": logic.parts.TransistorPart,
+            "Vdd": logic.parts.VddPart,
+            "Gnd": logic.parts.GndPart,
+            "Probe": logic.parts.ProbePart,
+            "Switch": logic.parts.SwitchPart,
         }
-        def new_entity_func(menu):
+        def new_part_func(menu):
             cls_name = menu.get_label()
             #TODO: Wow... talk about inefficient
-            for name, cls in entity_classes.iteritems():
+            for name, cls in part_classes.iteritems():
                 if name == cls_name:
-                    self.schematic_widget.add_entity(cls())
+                    self.schematic_widget.add_part(cls())
                     break
-        for name, entity_cls in entity_classes.iteritems():
-            menu_description["Add"][name] = new_entity_func
+        for name, part_cls in part_classes.iteritems():
+            menu_description["Add"][name] = new_part_func
 
         self.menu_bar = gtk.MenuBar()
         for menu_name, menu_dict in menu_description.iteritems():
@@ -71,7 +71,7 @@ class Interface(gtk.Window):
         self.set_title("Logic Simulator")
         self.show_all()
 
-        self.schematic_widget.pan_to_entities()
+        self.schematic_widget.pan_to_parts()
 
     def run(self):
         gtk.main()

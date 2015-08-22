@@ -1,27 +1,26 @@
 
 from schematic import Schematic
 from schematicwidget import SchematicWidget
-from entities import Entity
-from net import Net
-from components import Component
 from interface import Interface
+from terminal import Terminal
+from parts import Part
+from net import Net, NetNode
 
-import entities
-import components
+import parts
 
-entity_registry = {
+part_registry = {
 
-    # Basic Components
-    "Transistor": components.TransistorComponent,
-    "Vdd":        components.VddComponent,
-    "Gnd":        components.GndComponent,
-    "Probe":      components.ProbeComponent,
-    "Switch":     components.SwitchComponent,
-    "IO":         components.IOComponent,
+    # Basic Circuitry
+    "Transistor": parts.TransistorPart,
+    "Vdd":        parts.VddPart,
+    "Gnd":        parts.GndPart,
+    "Probe":      parts.ProbePart,
+    "Switch":     parts.SwitchPart,
+    "IO":         parts.IOPart,
 
-    # Drawing Entities
-    "Lines": entities.LinesEntity,
-    "Circle": entities.CircleEntity,
+    # Drawing
+    "Lines": parts.LinesPart,
+    "Circle": parts.CirclePart,
     #"Text":
     #"Curve":
 

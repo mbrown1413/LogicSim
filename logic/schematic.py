@@ -9,51 +9,58 @@ import numpy
 import logic
 
 
-# Matches "component[term]" or just "component"
+# Matches "part[term]" or just "part"
 term_re = re.compile(r"^([^[]+)(\[([^\]]+)\])?$")
 
 
 class Schematic(object):
-    """A collection of entities laid out onto a schematic."""
+    """A collection of parts connected by nets."""
 
     def __init__(self):
-        self.entities = set()
+        self.parts = set()
+        self.nets = set()
 
-    def draw(self, context, selected_entities=(), **kwargs):
+    def draw(self, context, selected=(), **kwargs):
         default_draw_connections = kwargs.get('draw_terminals', False)
 
-        for entity in self.entities:
-            if entity in selected_entities:
+        for part in self.parts:
+            if part in selected:
                 kwargs['draw_terminals'] = True
             else:
                 kwargs['draw_terminals'] = default_draw_connections
 
             context.save()
-            entity.draw(context, selected=entity in selected_entities, **kwargs)
+            part.draw(context, selected=part in selected, **kwargs)
             context.restore()
 
             """
-            context.rectangle(*entity.get_bbox())
+            context.rectangle(*part.get_bbox())
             context.set_source_rgb(0, 1, 1)
             context.set_line_width(.2)
             context.stroke()
             """
 
-    def add_entity(self, entity):
-        entity.reset()
-        self.entities.add(entity)
+        for net in self.nets:
+            context.save()
+            net.draw(context, selected=net in selected, **kwargs)
+            context.restore()
 
-    def add_entities(self, entities):
-        self.entities.update(entities)
+    def add_part(self, part):
+        assert isinstance(part, logic.Part)
+        part.reset()
+        self.parts.add(part)
 
-    def remove(self, entity):
-        assert entity in self.entities
+    def add_parts(self, *parts):
+        self.parts.update(parts)
 
-        if isinstance(entity, logic.Component):
+    def remove(self, part):
+
+        if isinstance(part, logic.Part):
+            assert part in self.parts
 
             # Disconnect terminals from nets
             modified_nets = set()
-            for term in entity.terminals.itervalues():
+            for term in part.terminals.itervalues():
                 if term.net:
                     term.net.remove(term)
                     modified_nets.add(term.net)
@@ -64,12 +71,16 @@ class Schematic(object):
                 if len(list(net.terminals)) < 2:
                     self.remove(net)
 
-        elif isinstance(entity, logic.Net):
-            for term in entity.terminals:
-                term.net = None
-                term.input = None
+            self.parts.remove(part)
 
-        self.entities.remove(entity)
+        elif isinstance(part, logic.Net):
+            assert part in self.nets
+            for term in part.terminals:
+                term.net = None
+                term.input = "float"
+
+            self.nets.remove(part)
+
         self.update()
 
     def connect(self, *terms):
@@ -80,11 +91,11 @@ class Schematic(object):
     def _connect2(self, term1, term2, net=None):
 
         def get_term_and_net(term):
-            if isinstance(term, logic.Component):
+            if isinstance(term, logic.Part):
                 assert len(term.terminals) == 1
                 term = term.terminals.values()[0]
 
-            if isinstance(term, logic.components.Terminal):
+            if isinstance(term, logic.Terminal):
                 return term, term.net
             elif isinstance(term, tuple):
                 return term, None
@@ -99,7 +110,7 @@ class Schematic(object):
         if n_disconnected == 2:
             if net is None:
                 net = logic.Net(term1, term2)
-                self.entities.add(net)
+                self.nets.add(net)
             else:
                  net.connect(term1, term2)
             return net
@@ -107,59 +118,52 @@ class Schematic(object):
             net.connect(term1, term2)
             return net
         elif n_disconnected == 0:
-            self.entities.remove(net1)
-            self.entities.remove(net2)
+            self.nets.remove(net1)
+            self.nets.remove(net2)
             new_net = logic.Net.combine(net1, term1, net2, term2)
-            self.entities.add(new_net)
+            self.nets.add(new_net)
             return new_net
-
-    @property
-    def components(self):
-        return filter(lambda e: isinstance(e, logic.Component), self.entities)
-
-    @property
-    def nets(self):
-        return filter(lambda e: isinstance(e, logic.Net), self.entities)
 
     def validate(self):
 
         all_terminals = set()
-        for component in self.components:
-            component.validate()
+        for part in self.parts:
+            assert isinstance(part, logic.Part)
+            part.validate()
 
-            if isinstance(component, logic.Component):
-                for term in component.terminals.itervalues():
-                    assert term.net in self.entities or term.net is None
+            for term in part.terminals.itervalues():
+                assert term.net in self.nets or term.net is None
 
-                all_terminals.update(component.terminals.values())
+            all_terminals.update(part.terminals.values())
 
         for net in self.nets:
-
-            if isinstance(net, logic.Net):
-                for term in net.terminals:
-                    assert term in all_terminals
+            assert isinstance(net, logic.Net)
+            for term in net.terminals:
+                assert term in all_terminals
 
     def reset(self):
-        for entity in self.entities:
-            entity.reset()
+        for part in self.parts:
+            part.reset()
+        for net in self.nets:
+            net.reset()
 
     def update(self):
 
-        to_visit = collections.deque(self.entities)
+        to_visit = collections.deque(self.parts.union(self.nets))
         while to_visit:
             item = to_visit.popleft()
 
             if isinstance(item, logic.Net):
                 was_updated = item.update()
                 if was_updated:
-                    to_visit.extend(set([term.component for term in item.terminals]))
+                    to_visit.extend(set([term.part for term in item.terminals]))
 
-            elif isinstance(item, logic.Entity):
-                prev_term_outs = item.get_output_dict()
+            elif isinstance(item, logic.Part):
+                prev_output = item.get_output_dict()
                 item.update()
-                cur_term_outs = item.get_output_dict()
+                cur_output = item.get_output_dict()
                 for name, term in item.terminals.iteritems():
-                    if prev_term_outs[name] != cur_term_outs[name]:
+                    if prev_output[name] != cur_output[name]:
                         to_visit.append(term.net)
 
             elif item is not None:
@@ -169,7 +173,7 @@ class Schematic(object):
     def get_bbox(self):
         left = top = float('inf')
         right = bot = float('-inf')
-        for item in list(self.entities) + list(self.nets):
+        for item in list(self.parts) + list(self.nets):
             bbox  = item.get_bbox()
             x1, y1 = bbox[0], bbox[1]
             x2, y2 = bbox[0]+bbox[2], bbox[1]+bbox[3]
@@ -179,10 +183,10 @@ class Schematic(object):
             bot   = max(bot,   y1, y2)
         return (left, top, right-left, bot-top)
 
-    def entity_at_pos(self, pos):
-        for entity in self.entities:
-            if entity.point_intersect(pos):
-                return entity
+    def part_at_pos(self, pos):
+        for item in list(self.parts) + list(self.nets):
+            if item.point_intersect(pos):
+                return item
         return None
 
     def get_closest_terminal(self, pos, search_dist=float('inf')):
@@ -190,8 +194,8 @@ class Schematic(object):
 
         closest_dist = float('inf')
         closest_term = None
-        for component in self.components:
-            for term in component.terminals.itervalues():
+        for part in self.parts:
+            for term in part.terminals.itervalues():
                 dist = numpy.linalg.norm(term.absolute_pos - pos)
                 if dist <= closest_dist:
                     closest_dist = dist
@@ -201,39 +205,40 @@ class Schematic(object):
         else:
             return closest_term
 
-    def get_entity_by_name(self, name):
+    def get_part_by_name(self, name):
         #TODO: Optimize
-        for entity in self.entities:
-            if entity.name == name:
-                return entity
+        #TODO: Naming conflicts
+        for part in self.parts:
+            if part.name == name:
+                return part
         return None
 
     @classmethod
-    def from_json(cls, json_str, entity_lib=None):
+    def from_json(cls, json_str, part_lib=None):
         data = json.loads(json_str)
         s = cls()
 
-        for desc in data.get('entities', ()):
-            entity_cls = logic.entity_registry[desc.pop('type')]
-            entity = entity_cls.from_json(desc)
-            s.add_entity(entity)
+        for desc in data.get('parts', ()):
+            part_cls = logic.part_registry[desc.pop('type')]
+            part = part_cls.from_json(desc)
+            s.add_part(part)
 
         def node_from_dict(d):
             if isinstance(d['location'], list):
                 loc = d['location']
             elif isinstance(d['location'], basestring):
                 match = term_re.match(d['location'])
-                component = s.get_entity_by_name(match.group(1))
-                assert component is not None
+                part = s.get_part_by_name(match.group(1))
+                assert part is not None
                 if match.group(3):
-                    loc = component[match.group(3)]
+                    loc = part[match.group(3)]
                 else:
-                    assert len(component.terminals) == 1
-                    loc = component.terminals.values()[0]
-            return logic.net.NetNode(loc, d['neighbors'])
+                    assert len(part.terminals) == 1
+                    loc = part.terminals.values()[0]
+            return logic.NetNode(loc, d['neighbors'])
 
         for desc in data.get('nets', ()):
             net = logic.Net(*map(node_from_dict, desc['nodes']))
-            s.entities.add(net)
+            s.nets.add(net)
 
         return s

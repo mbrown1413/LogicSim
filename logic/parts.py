@@ -1,0 +1,438 @@
+
+
+from __future__ import division
+import math
+import os
+
+import numpy
+import cairo
+
+import logic
+
+
+class Part(object):
+    draggable = True
+
+    def __init__(self, pos=(0, 0), scale=1, rot=0, name=None, line_width=0.1):
+        self.pos = numpy.array(pos)
+        self.scale = scale
+        self.rot = rot
+        self.name = name
+        self.line_width = line_width
+        self.terminals = {}
+
+    def __getitem__(self, name):
+        return self.terminals[name]
+
+    def add_terminal(self, name, pos, net=None, output="float"):
+
+        # Make unique name
+        #TODO: No idea if this actually works
+        orig_name = name
+        i = 0
+        i_str = ""
+        while name in self.terminals:
+            name = "{}{}".format(orig_name, i_str)
+            i += 1
+            i_str = str(i)
+
+        t = logic.Terminal(self, name, pos, output=output)
+        self.terminals[name] = t
+        return t
+
+    def get_output_dict(self):
+        return {name: term.output for name, term in self.terminals.iteritems()}
+
+    def transform(self, context):
+        context.translate(*self.pos)
+        context.scale(self.scale, self.scale)
+        context.rotate(math.radians(self.rot))
+
+    def point_schematic_to_object(self, point, _reverse=False):
+        """Converts `point` from schematic to object space."""
+        dummy_surface = cairo.SVGSurface(os.devnull, 0, 0)
+        ctx = cairo.Context(dummy_surface)
+        ctx.identity_matrix()
+        self.transform(ctx)
+        if _reverse:
+            return ctx.device_to_user(*point)
+        else:
+            return ctx.user_to_device(*point)
+
+    def point_object_to_schematic(self, point):
+        """Converts `point` from object to schematic space."""
+        return self.point_schematic_to_object(point, _reverse=True)
+
+    def rect_object_to_schematic(self, rect):
+        """Converts `rect` from object to schematic space."""
+
+        # Get 4 points of the rectangle
+        point1 = (rect[0],         rect[1]        )
+        point2 = (rect[0]+rect[2], rect[1]        )
+        point3 = (rect[0]+rect[2], rect[1]+rect[3])
+        point4 = (rect[0],         rect[1]+rect[3])
+        points = (point1, point2, point3, point4)
+
+        # Transform points to schematic space, then get their bounding box
+        points = map(self.point_schematic_to_object, points)
+        xs = map(lambda p: p[0], points)
+        ys = map(lambda p: p[1], points)
+        return (
+            min(xs),
+            min(ys),
+            max(xs) - min(xs),
+            max(ys) - min(ys),
+        )
+
+    def set_draw_settings(self, ctx, **kwargs):
+        if kwargs.get('selected', False):
+            ctx.set_source_rgb(0, 0, 1)
+        else:
+            ctx.set_source_rgb(0, 0, 0)
+        ctx.set_line_width(self.line_width)
+
+    def get_bbox(self):
+        """Gets bounding box in schematic space.
+
+        Returns: (x, y, width, height)
+            Where (x, y) is the top left of the rectangle.
+
+        """
+        return self.rect_object_to_schematic(self._get_bbox())
+
+    def _get_bbox(self):
+        """Like `get_bbox()`, but returns the bbox in object space."""
+        raise NotImplementedError()
+
+    def point_intersect(self, point):
+        """Returns `True` if `point` is inside the part."""
+        return self._point_intersect(self.point_object_to_schematic(point))
+
+    def _point_intersect(self, point):
+        """Like `point_intersect()`, but accepts `point` in object space."""
+        bbox = self._get_bbox()
+        left, top = bbox[0], bbox[1]
+        right = left + bbox[2]
+        bottom = top + bbox[3]
+        return point[0] >= left and point[1] >= top and \
+               point[0] <= right and point[1] <= bottom
+
+    def rotate(self, degrees):
+        self.rot = (self.rot + degrees) % 360
+
+    def __str__(self):
+        name_str = ""
+        if self.name:
+            name_str = ' "{}"'.format(self.name)
+        return "<{}{}>".format(self.__class__.__name__, name_str)
+
+    def draw(self, ctx, **kwargs):
+        if not kwargs.get('draw_terminals', False):
+            return
+
+        ctx.save()
+        ctx.set_line_width(0.05)
+        ctx.set_source_rgb(0, 0, 0)
+        self.transform(ctx)
+
+        for term in self.terminals.itervalues():
+            ctx.arc(term.pos[0], term.pos[1], 0.1, 0, math.pi*2)
+            ctx.stroke()
+
+        ctx.restore()
+
+    def validate(self):
+        for term in self.terminals.itervalues():
+            assert term.net is None or term in term.net.terminals
+
+    def on_activate(self):
+        pass
+
+    def update(self):
+        pass
+
+    def reset(self):
+        for term in self.terminals.itervalues():
+            term.reset()
+
+    @classmethod
+    def from_json(cls, data):
+        return cls(**data)
+
+
+class LinesPart(Part):
+
+    def __init__(self, *args, **kwargs):
+        self.points = kwargs.pop('points')
+        super(LinesPart, self).__init__(*args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+
+        ctx.move_to(*self.points[0])
+        for point in self.points[1:]:
+            ctx.line_to(*point)
+        ctx.stroke()
+
+    def _get_bbox(self):
+        xs = map(lambda p: p[0], self.points)
+        ys = map(lambda p: p[1], self.points)
+        return (
+            min(xs), min(ys),
+            max(xs)-min(xs), max(ys)-min(ys)
+        )
+
+
+class CirclePart(Part):
+
+    def __init__(self, *args, **kwargs):
+        self.center = kwargs.pop('center')
+        self.radius = kwargs.pop('radius')
+        super(CirclePart, self).__init__(*args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        super(CirclePart, self).draw(ctx, **kwargs)
+
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+
+        ctx.arc(self.center[0], self.center[1], self.radius, 0, math.pi*2)
+        ctx.stroke()
+
+    def _get_bbox(self):
+        points = (point1, point2)
+        xs = map(lambda p: p[0], points)
+        ys = map(lambda p: p[1], points)
+        return (
+            min(xs), min(ys),
+            max(xs)-min(xs), max(ys)-min(ys)
+        )
+
+
+class TransistorPart(Part):
+
+    def __init__(self, *args, **kwargs):
+        self.pmos = kwargs.pop("pmos", False)
+        super(TransistorPart, self).__init__(*args, **kwargs)
+        self.add_terminal("gate", (-1, 0))
+        self.add_terminal("source", (1, -2))
+        self.add_terminal("drain", (1, 2))
+
+    @property
+    def nmos(self):
+        return not self.pmos
+
+    def update(self):
+        g, s, d = self["gate"], self["source"], self["drain"]
+        g.output = "float"
+        active = (self.nmos and g.input == "high") or \
+                 (self.pmos and g.input == "low")
+
+        if active:
+            s.output = d.input
+            d.output = s.input
+        else:
+            s.output = "float"
+            d.output = "float"
+
+    def draw(self, ctx, **kwargs):
+        super(TransistorPart, self).draw(ctx, **kwargs)
+
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+
+        if self.pmos:
+            ctx.move_to(-1, 0)
+            ctx.line_to(-0.275, 0)
+            ctx.stroke()
+            ctx.arc(-0.15, 0, 0.15, 0, 2*math.pi)
+            ctx.stroke()
+        else:
+            ctx.move_to(-1, 0)
+            ctx.line_to(0.1, 0)
+            ctx.stroke()
+
+        ctx.move_to(0.1, -0.75)
+        ctx.line_to(0.1, 0.75)
+
+        ctx.move_to(1, 2)
+        ctx.line_to(1, 1)
+        ctx.line_to(0.375, 1)
+        ctx.line_to(0.375, -1)
+        ctx.line_to(1, -1)
+        ctx.line_to(1, -2)
+        ctx.stroke()
+
+    def _get_bbox(self):
+        return (
+            -1, -2,
+            2, 4
+        )
+
+
+class VddPart(Part):
+
+    def __init__(self, *args, **kwargs):
+        super(VddPart, self).__init__(*args, **kwargs)
+        self.add_terminal("vdd", (0, 1))
+
+    def reset(self):
+        super(VddPart, self).reset()
+        self['vdd'].output = "high"
+
+    def draw(self, ctx, **kwargs):
+        super(VddPart, self).draw(ctx, **kwargs)
+
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+
+        ctx.move_to(0, -0.75)
+        ctx.line_to(-0.5, 0)
+        ctx.line_to(0.5, 0)
+        ctx.line_to(0, -0.75)
+
+        ctx.move_to(0, 0)
+        ctx.line_to(0, 1)
+
+        ctx.stroke()
+
+    def _get_bbox(self):
+        return (
+            -0.5, -.75,
+            1, 1.75
+        )
+
+
+class GndPart(Part):
+
+    def __init__(self, *args, **kwargs):
+        super(GndPart, self).__init__(*args, **kwargs)
+        self.add_terminal("gnd", (0, -1))
+
+    def reset(self):
+        super(GndPart, self).reset()
+        self['gnd'].output = "low"
+
+    def draw(self, ctx, **kwargs):
+        super(GndPart, self).draw(ctx, **kwargs)
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+
+        ctx.move_to(0, -1)
+        ctx.line_to(0, 0)
+
+        ctx.move_to(-.75, 0)
+        ctx.line_to(.75, 0)
+
+        ctx.move_to(-0.5, .25)
+        ctx.line_to(0.5, .25)
+
+        ctx.move_to(-0.25, 0.5)
+        ctx.line_to(0.25, 0.5)
+
+        ctx.stroke()
+
+    def _get_bbox(self):
+        return (
+            -.75, -1,
+            1.5, 1.5
+        )
+
+
+class ProbePart(Part):
+
+    def __init__(self, *args, **kwargs):
+        super(ProbePart, self).__init__(*args, **kwargs)
+        self.add_terminal("term", (0, 0))
+        self.r = 0.4
+
+    def draw(self, ctx, **kwargs):
+        ctx.save()
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+
+        # Outline
+        ctx.arc(0, 0, self.r, 0, 2*math.pi)
+        ctx.stroke()
+
+        # Fill
+        ctx.set_source_rgb(*{
+            "high": (0, 1, 0),
+            "low": (0, 0, 0),
+            "contention": (1, 0, 0),
+            "float": (1, 1, 1),
+        }[self["term"].input])
+        ctx.arc(0, 0, self.r-0.05, 0, 2*math.pi)
+        ctx.fill()
+
+        ctx.restore()
+        super(ProbePart, self).draw(ctx, **kwargs)
+
+    def _get_bbox(self):
+        r = self.r + 0.1
+        return (
+            -r, -r,
+            r*2, r*2
+        )
+
+    def _point_intersect(self, point):
+        return numpy.square(point).sum() <= self.r**2
+
+
+class SwitchPart(Part):
+
+    def __init__(self, *args, **kwargs):
+        self.outputs = kwargs.pop('outputs', ("float", "high", "low", "contention"))
+        super(SwitchPart, self).__init__(*args, **kwargs)
+        self.width = 0.5
+        self.height = 1
+        self.add_terminal("term", (0, 0), output=self.outputs[0])
+
+    def on_activate(self):
+        idx = self.outputs.index(self["term"].output)
+        self["term"].output = self.outputs[(idx+1)%len(self.outputs)]
+
+    def draw(self, ctx, **kwargs):
+        ctx.save()
+        self.transform(ctx)
+        ctx.set_line_width(0.1/self.scale)
+
+        # Fill
+        ctx.set_source_rgb(*{
+            "high": (0, 1, 0),
+            "low": (0, 0, 0),
+            "contention": (1, 0, 0),
+            "float": (1, 1, 1),
+        }[self["term"].output])
+        ctx.rectangle(-self.width/2, -self.height/2, self.width, self.height)
+        ctx.fill()
+
+        # Outline
+        self.set_draw_settings(ctx, **kwargs)
+        ctx.rectangle(-self.width/2, -self.height/2, self.width, self.height)
+        ctx.stroke()
+
+        ctx.restore()
+        super(SwitchPart, self).draw(ctx, **kwargs)
+
+    def _get_bbox(self):
+        return (-self.width/2, -self.height/2,
+                self.width, self.height)
+
+    def reset(self):
+        t = self['term']
+        t.input = "float"
+        t.output = self.outputs[0]
+
+
+class IOPart(Part):
+
+    def __init__(self, *args, **kwargs):
+        super(IOPart, self).__init__(*args, **kwargs)
+        self.add_terminal("term", (0, 0))
+
+    def _get_bbox(self):
+        return (0, 0, 0, 0)
+
+    #TODO: Make this an actually drawn, editable part

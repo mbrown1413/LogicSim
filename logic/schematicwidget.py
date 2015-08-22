@@ -37,14 +37,14 @@ class SchematicWidget(gtk.DrawingArea):
         self.selected = None
         self.dragging = False
         self.grid_visible = True
-        self.ghost_entity = None  # Drawn, but not actually in schematic
+        self.ghost_part = None  # Drawn, but not actually in schematic
         self.draw_all_terminals = False
 
         self.action_listeners = (
 
             # Mouse Actions
             NetCreateAction(mouse_button=1),
-            EntityDragAction(mouse_button=1),
+            PartDragAction(mouse_button=1),
             PanDragAction(mouse_button=1),
             SelectAction(mouse_button=1),
 
@@ -90,12 +90,12 @@ class SchematicWidget(gtk.DrawingArea):
             self.draw_grid(context, event.area, self.grid_size)
 
         self.schematic.draw(context,
-            selected_entities=(self.selected,),
+            selected=(self.selected,),
             draw_terminals=self.draw_all_terminals,
         )
 
-        if self.ghost_entity:
-            self.ghost_entity.draw(context)
+        if self.ghost_part:
+            self.ghost_part.draw(context)
 
         """
         if self.selected:
@@ -165,14 +165,14 @@ class SchematicWidget(gtk.DrawingArea):
         self.draw_pos = (width/2, height/2) - self.pos_draw_to_widget(draw_pos)
         self.post_redraw()
 
-    def pan_to_entities(self, entities=None):
-        if entities is None: entities = self.schematic.entities
-        if entities is None: return
+    def pan_to_parts(self, parts=None):
+        if parts is None: parts = self.schematic.parts
+        if parts is None: return
 
         left = top = float("inf")
         right = bot = float("-inf")
-        for entity in entities:
-            bbox = entity.get_bbox()
+        for part in parts:
+            bbox = part.get_bbox()
             left = min(left, bbox[0])
             right = max(right, bbox[0]+bbox[2])
             top = min(top, bbox[1])
@@ -188,13 +188,13 @@ class SchematicWidget(gtk.DrawingArea):
             self.window.invalidate_rect(rect, True)
             self.window.process_updates(True)
 
-    def add_entity(self, entity, pos=None):
+    def add_part(self, part, pos=None):
         if pos == None:
             _, _, width, height = self.get_allocation()
             pos = self.snap_to_grid(self.pos_widget_to_draw(width/2, height/2))
-        entity.pos = pos
+        part.pos = pos
 
-        self.schematic.add_entity(entity)
+        self.schematic.add_part(part)
         self.post_redraw()
 
     def snap_to_grid(self, pos, grid_size=None):
@@ -209,8 +209,8 @@ class SchematicWidget(gtk.DrawingArea):
         self.grid_size *= factor
         self.post_redraw()
 
-    def change_entity_scale(self, factor):
-        if isinstance(self.selected, logic.Entity):
+    def change_part_scale(self, factor):
+        if isinstance(self.selected, logic.Part):
             self.selected.scale *= factor
             self.post_redraw()
 
@@ -251,7 +251,7 @@ class SelectAction(BaseAction):
 
         if event.button == 1:
             pos = widget.pos_widget_to_draw(event.x, event.y)
-            widget.selected = widget.schematic.entity_at_pos(pos)
+            widget.selected = widget.schematic.part_at_pos(pos)
             widget.post_redraw()
             return True
 
@@ -340,7 +340,7 @@ class PanDragAction(BaseDragAction):
         widget.grid_visible = True
         widget.post_redraw()
 
-class EntityDragAction(BaseDragAction):
+class PartDragAction(BaseDragAction):
 
     def should_start_drag(self, widget, event):
         return widget.selected is not None and \
@@ -350,30 +350,29 @@ class EntityDragAction(BaseDragAction):
                )
 
     def on_drag_start(self, widget, event):
-        self.start_entity_pos = tuple(widget.selected.pos)
+        self.start_part_pos = tuple(widget.selected.pos)
         self.start_mouse_pos = widget.pos_widget_to_draw(event.x, event.y)
 
     def on_drag_movement(self, widget, event):
         mouse_pos = widget.pos_widget_to_draw(event.x, event.y)
         delta = mouse_pos - self.start_mouse_pos
-        widget.selected.pos = widget.snap_to_grid(self.start_entity_pos + delta)
+        widget.selected.pos = widget.snap_to_grid(self.start_part_pos + delta)
 
         widget.post_redraw()
 
     def on_drag_end(self, widget, event):
-        self.start_entity_pos = None
+        self.start_part_pos = None
         self.start_mouse_pos = None
 
 class NetCreateAction(BaseDragAction):
 
     def should_start_drag(self, widget, event):
-        if not isinstance(widget.selected, logic.Component):
+        if not isinstance(widget.selected, logic.Part):
             return False
 
         draw_pos = widget.pos_widget_to_draw(event.x, event.y)
         for term in widget.selected.terminals.itervalues():
             if term.point_intersect(draw_pos):
-                self.component = widget.selected
                 self.start_term = term
                 self.start_pos = term.absolute_pos
                 return True
@@ -391,7 +390,7 @@ class NetCreateAction(BaseDragAction):
         else:
             end_pos = widget.pos_widget_to_draw(event.x, event.y)
 
-        widget.ghost_entity = logic.Net(self.start_pos, end_pos)
+        widget.ghost_part = logic.Net(self.start_pos, end_pos)
         widget.post_redraw()
 
     def on_drag_end(self, widget, event):
@@ -404,7 +403,7 @@ class NetCreateAction(BaseDragAction):
             widget.post_redraw()
 
         widget.draw_all_terminals = False
-        widget.ghost_entity = None
+        widget.ghost_part = None
         widget.post_redraw()
 
 class PanAction(BaseAction):
@@ -460,23 +459,23 @@ class SimpleActions(BaseAction):
         elif event.keyval == ord('='):  # Reset Zoom
             widget.zoom_set(1)
 
-        elif event.keyval == ord(' '):  # Activate entity
-            if isinstance(widget.selected, logic.Entity):
+        elif event.keyval == ord(' '):  # Activate part
+            if isinstance(widget.selected, logic.Part):
                 widget.selected.on_activate()
                 widget.schematic.update()
                 widget.post_redraw()
 
         elif event.keyval == ord('R'):  # Rotate
-            if isinstance(widget.selected, logic.Entity):
+            if isinstance(widget.selected, logic.Part):
                 widget.selected.rotate(90)
                 widget.post_redraw()
 
     def on_button_release(self, widget, event):
         if event.button == 2:
             pos = widget.pos_widget_to_draw(event.x, event.y)
-            entity = widget.schematic.entity_at_pos(pos)
-            if entity:
-                entity.on_activate()
+            part = widget.schematic.part_at_pos(pos)
+            if isinstance(part, logic.Part):
+                part.on_activate()
                 widget.schematic.update()
                 widget.post_redraw()
                 return True
