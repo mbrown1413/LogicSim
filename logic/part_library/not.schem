@@ -1,0 +1,56 @@
+{
+    "name": "Not",
+    "parts": [
+        {
+            "type": "Vdd",
+            "name": "vdd",
+            "pos": [1, -5]
+        }, {
+            "type": "Gnd",
+            "name": "gnd",
+            "pos": [1, 5]
+        }, {
+            "type": "Transistor",
+            "name": "t1",
+            "pos": [0, 2]
+        }, {
+            "type": "Transistor",
+            "name": "t2",
+            "pos": [0, -2],
+            "pmos": true
+        }, {
+            "type": "IO",
+            "name": "in",
+            "pos": [-2, 0]
+        }, {
+            "type": "IO",
+            "name": "out",
+            "pos": [5, 0]
+        }
+    ],
+    "nets": [
+        {
+            "nodes": [
+                {"location": "vdd", "neighbors": [1]},
+                {"location": "t2[source]", "neighbors": [0]}
+            ]
+        }, {
+            "nodes": [
+                {"location": "gnd", "neighbors": [1]},
+                {"location": "t1[drain]", "neighbors": [0]}
+            ]
+        }, {
+            "nodes": [
+                {"location": "t1[gate]", "neighbors": [1]},
+                {"location": "in", "neighbors": [0, 2]},
+                {"location": "t2[gate]", "neighbors": [1]}
+            ]
+        }, {
+            "nodes": [
+                {"location": "out", "neighbors": [1]},
+                {"location": "t1[source]", "neighbors": [0, 2]},
+                {"location": "t2[drain]", "neighbors": [1]}
+            ]
+        }
+    ]
+}

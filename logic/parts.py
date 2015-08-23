@@ -155,10 +155,6 @@ class Part(object):
         for term in self.terminals.itervalues():
             term.reset()
 
-    @classmethod
-    def from_json(cls, data):
-        return cls(**data)
-
 
 class LinesPart(Part):
 
@@ -436,3 +432,46 @@ class IOPart(Part):
         return (0, 0, 0, 0)
 
     #TODO: Make this an actually drawn, editable part
+
+
+class AggregatePart(Part):
+
+    def __init__(self, schematic, *args, **kwargs):
+        super(AggregatePart, self).__init__(*args, **kwargs)
+        self.schematic = schematic
+        self.schematic.reset()
+
+        # Pairs terminals, connecting the terminals from the aggregate part to
+        # the IO part terminals of the underlying schematic.
+        self.terminal_pairs = []
+        for part in schematic.parts:
+            if isinstance(part, IOPart):
+                t = self.add_terminal(part.name, part.pos)
+                self.terminal_pairs.append((t, part['term']))
+
+    def draw(self, ctx, **kwargs):
+        super(AggregatePart, self).draw(ctx, **kwargs)
+        del kwargs['draw_terminals']
+        kwargs['selected'] = ()
+
+        self.transform(ctx)
+        self.schematic.draw(ctx, **kwargs)
+
+    def update(self):
+
+        # Copy external inputs to IO Component outputs
+        for external, internal in self.terminal_pairs:
+            internal.output = external.input
+
+        self.schematic.update()
+
+        # Copy IO Component inputs to external outputs
+        for external, internal in self.terminal_pairs:
+            external.output = internal.input
+
+    def _get_bbox(self):
+        return self.schematic.get_bbox()
+
+    def reset(self):
+        self.schematic.reset()
+        super(AggregatePart, self).reset()

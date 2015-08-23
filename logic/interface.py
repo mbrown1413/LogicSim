@@ -33,13 +33,9 @@ class Interface(gtk.Window):
             ))),
         ))
 
-        part_classes = {
-            "Transistor": logic.parts.TransistorPart,
-            "Vdd": logic.parts.VddPart,
-            "Gnd": logic.parts.GndPart,
-            "Probe": logic.parts.ProbePart,
-            "Switch": logic.parts.SwitchPart,
-        }
+        part_classes = dict(logic.part_library)
+        del part_classes['Lines']
+        del part_classes['Circle']
         def new_part_func(menu):
             cls_name = menu.get_label()
             #TODO: Wow... talk about inefficient

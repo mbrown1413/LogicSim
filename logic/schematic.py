@@ -16,9 +16,9 @@ term_re = re.compile(r"^([^[]+)(\[([^\]]+)\])?$")
 class Schematic(object):
     """A collection of parts connected by nets."""
 
-    def __init__(self):
-        self.parts = set()
-        self.nets = set()
+    def __init__(self, parts=(), nets=()):
+        self.parts = set(parts)
+        self.nets = set(nets)
 
     def draw(self, context, selected=(), **kwargs):
         default_draw_connections = kwargs.get('draw_terminals', False)
@@ -214,13 +214,17 @@ class Schematic(object):
         return None
 
     @classmethod
-    def from_json(cls, json_str, part_lib=None):
+    def from_json_str(cls, json_str):
         data = json.loads(json_str)
+        return cls.from_dict(data)
+
+    @classmethod
+    def from_dict(cls, data):
         s = cls()
 
         for desc in data.get('parts', ()):
-            part_cls = logic.part_registry[desc.pop('type')]
-            part = part_cls.from_json(desc)
+            part_cls = logic.part_library[desc.pop('type')]
+            part = part_cls(**desc)
             s.add_part(part)
 
         def node_from_dict(d):

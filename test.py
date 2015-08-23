@@ -52,42 +52,32 @@ def main():
     schematic.connect(p1, gate['out'])
     """
 
-    schematic = logic.Schematic.from_json("""
+    schematic = logic.Schematic.from_json_str("""
     {
         "parts": [
             {
-                "type": "Vdd",
-                "name": "vdd",
-                "pos": [0, -4]
-            }, {
-                "type": "Probe",
-                "name": "p1",
-                "pos": [0, 4]
-            }, {
                 "type": "Switch",
                 "name": "s1",
                 "pos": [-4, 0]
             }, {
-                "type": "Transistor",
-                "name": "t1",
-                "pos": [-1, 0]
+                "type": "Not",
+                "name": "not"
+            }, {
+                "type": "Probe",
+                "name": "p1",
+                "pos": [8, 0]
             }
         ],
         "nets": [
             {
                 "nodes": [
                     {"location": "s1", "neighbors": [1]},
-                    {"location": "t1[gate]", "neighbors": [0]}
+                    {"location": "not[in]", "neighbors": [0]}
                 ]
             }, {
                 "nodes": [
-                    {"location": "vdd", "neighbors": [1]},
-                    {"location": "t1[source]", "neighbors": [0]}
-                ]
-            }, {
-                "nodes": [
-                    {"location": "p1", "neighbors": [1]},
-                    {"location": "t1[drain]", "neighbors": [0]}
+                    {"location": "not[out]", "neighbors": [1]},
+                    {"location": "p1", "neighbors": [0]}
                 ]
             }
         ]
