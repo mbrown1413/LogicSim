@@ -28,6 +28,7 @@ class SchematicWidget(gtk.DrawingArea):
         self.schematic = schematic
         self.draw_pos = numpy.array((0, 0))  # Widget-space coordinate of the
                                              # upper left corner of the canvas
+        self.first_exposure = True
         self.scale = 20
         self.grid_size = 1
 
@@ -74,6 +75,10 @@ class SchematicWidget(gtk.DrawingArea):
     def on_expose(self, widget, event):
         #TODO: Maybe not nessesary to validate on every exposure
         self.schematic.validate()
+
+        if self.first_exposure:
+            self.first_exposure = False
+            self.pan_to_parts()
 
         context = widget.window.cairo_create()
         context.rectangle(event.area.x, event.area.y,
@@ -167,7 +172,7 @@ class SchematicWidget(gtk.DrawingArea):
 
     def pan_to_parts(self, parts=None):
         if parts is None: parts = self.schematic.parts
-        if parts is None: return
+        if not parts: return
 
         left = top = float("inf")
         right = bot = float("-inf")

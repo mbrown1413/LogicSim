@@ -1,6 +1,7 @@
 
 from __future__ import division
 import collections
+from copy import deepcopy
 import json
 import re
 
@@ -220,6 +221,7 @@ class Schematic(object):
 
     @classmethod
     def from_dict(cls, data):
+        data = deepcopy(data)
         s = cls()
 
         for desc in data.get('parts', ()):
@@ -246,3 +248,8 @@ class Schematic(object):
             s.nets.add(net)
 
         return s
+
+    @classmethod
+    def from_file(cls, filename):
+        text = open(filename, 'r').read()
+        return cls.from_json_str(text)

@@ -1,0 +1,29 @@
+{
+    "parts": [
+        {
+            "type": "Switch",
+            "name": "s1",
+            "pos": [-4, 0]
+        }, {
+            "type": "Not",
+            "name": "not"
+        }, {
+            "type": "Probe",
+            "name": "p1",
+            "pos": [8, 0]
+        }
+    ],
+    "nets": [
+        {
+            "nodes": [
+                {"location": "s1", "neighbors": [1]},
+                {"location": "not[in]", "neighbors": [0]}
+            ]
+        }, {
+            "nodes": [
+                {"location": "not[out]", "neighbors": [1]},
+                {"location": "p1", "neighbors": [0]}
+            ]
+        }
+    ]
+}
