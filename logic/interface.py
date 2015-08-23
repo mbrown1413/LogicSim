@@ -69,15 +69,17 @@ class Interface(gtk.Window):
         self.show_all()
 
     def menu_load(self):
+        dialog = gtk.FileChooserDialog("Open Schematic...")
+        dialog.add_button("_Cancel", gtk.RESPONSE_CANCEL)
+        dialog.add_button("_Open", gtk.RESPONSE_OK)
 
-        dialog = gtk.FileSelection("Open Schematic...")
-        def ok_clicked(w):
-            filename = dialog.get_filename()
-            self.load_schematic_from_file(filename)
+        try:
+            result = dialog.run()
+            if result == gtk.RESPONSE_OK:
+                filename = dialog.get_filename()
+                self.load_schematic_from_file(filename)
+        finally:
             dialog.destroy()
-        dialog.ok_button.connect("clicked", ok_clicked)
-        dialog.cancel_button.connect("clicked", lambda _: dialog.destroy())
-        dialog.show()
 
     def load_schematic_from_file(self, filename):
         schematic = logic.Schematic.from_file(filename)
