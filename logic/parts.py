@@ -9,6 +9,7 @@ import numpy
 import cairo
 
 import logic
+import _geometry
 
 
 class Part(object):
@@ -207,6 +208,20 @@ class LinesPart(Part):
             min(xs), min(ys),
             max(xs)-min(xs), max(ys)-min(ys)
         )
+
+    def _point_intersect(self, point):
+        point = numpy.array(point)
+
+        for p1, p2 in self.lines:
+            dist = _geometry.line_distance_from_point(point, p1, p2)
+            if dist < self.line_width / 2:
+                return True
+        return False
+
+    @property
+    def lines(self):
+        for i in range(1, len(self.points)):
+            yield (self.points[i-1], self.points[i])
 
 
 class CirclePart(Part):

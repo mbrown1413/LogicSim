@@ -6,6 +6,7 @@ import math
 import numpy
 
 import logic
+import _geometry
 
 
 class Net(object):
@@ -222,29 +223,12 @@ class Net(object):
 
                     node1 = self.nodes[i]
                     node2 = self.nodes[j]
-                    dist = self._point_dist_to_segment(point, node1, node2)
+                    dist = _geometry.line_distance_from_point(point, node1.pos, node2.pos)
                     if dist < closest_dist:
                         closest_dist = dist
                     if dist <= line_thickness / 2:
                         return True
         return False
-
-    def _point_dist_to_segment(self, point, node1, node2):
-        v1 = numpy.array(node2.pos) - numpy.array(node1.pos)
-        v2 = point - numpy.array(node1.pos)
-
-        # Project v2 onto v1
-        v1_norm = numpy.linalg.norm(v1)
-        v2_norm = numpy.linalg.norm(v2)
-        v1_hat = v1 / v1_norm
-        v2_hat = v2 / v2_norm
-        proj = v1_hat.dot(v2) * v1_hat
-
-        if proj.dot(v1) < 0 or numpy.linalg.norm(proj) > numpy.linalg.norm(v1):
-            return float("inf")
-
-        closest_point = node1.pos + proj
-        return numpy.linalg.norm(closest_point - point)
 
     def get_dict(self):
         return {"nodes": [n.get_dict() for n in self.nodes]}
