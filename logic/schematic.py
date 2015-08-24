@@ -116,8 +116,10 @@ class Schematic(object):
                  net.connect(term1, term2)
             return net
         elif n_disconnected == 1 or net1 == net2:
-            net.connect(term1, term2)
-            return net
+            if net1 == None:
+                net1, net2 = net2, net1
+            net1.connect(term1, term2)
+            return net1
         elif n_disconnected == 0:
             self.nets.remove(net1)
             self.nets.remove(net2)
