@@ -1,5 +1,6 @@
 
 from collections import OrderedDict
+import json
 
 import gtk
 
@@ -20,7 +21,7 @@ class Interface(gtk.Window):
             ("File", OrderedDict((
                 ("New", lambda _: self.load_schematic(logic.Schematic())),
                 ("Open", lambda _: self.menu_load()),
-                ("Save", lambda _: None),
+                ("Save", lambda _: self.menu_save()),
                 ("Exit", gtk.main_quit),
             ))),
             ("View", OrderedDict((
@@ -94,6 +95,23 @@ class Interface(gtk.Window):
         self.vbox.remove(old_widget)
         self.vbox.pack_start(self.schematic_widget, True, True, 0)
         self.show_all()
+
+    def menu_save(self):
+        dialog = gtk.FileChooserDialog("Save Schematic...", action=gtk.FILE_CHOOSER_ACTION_SAVE)
+        dialog.add_button("_Cancel", gtk.RESPONSE_CANCEL)
+        dialog.add_button("_Save", gtk.RESPONSE_OK)
+
+        try:
+            result = dialog.run()
+            if result == gtk.RESPONSE_OK:
+                filename = dialog.get_filename()
+                self.save_schematic(filename)
+        finally:
+            dialog.destroy()
+
+    def save_schematic(self, filename):
+        contents = json.dumps(self.schematic.get_dict(), indent=4)
+        open(filename, "w").write(contents)
 
     def run(self):
         gtk.main()

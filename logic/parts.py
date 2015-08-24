@@ -1,6 +1,7 @@
 
 
 from __future__ import division
+from collections import OrderedDict
 import math
 import os
 
@@ -12,6 +13,8 @@ import logic
 
 class Part(object):
     draggable = True
+    saved_fields = ("part_type", "name", "pos", "scale", "rot", "line_width")
+    part_type = None  # Must be overwriten by subclasses
 
     def __init__(self, pos=(0, 0), scale=1, rot=0, name=None, line_width=0.1):
         self.pos = numpy.array(pos)
@@ -20,6 +23,8 @@ class Part(object):
         self.name = name
         self.line_width = line_width
         self.terminals = {}
+
+        assert self.part_type is not None
 
     def __getitem__(self, name):
         return self.terminals[name]
@@ -120,6 +125,28 @@ class Part(object):
     def rotate(self, degrees):
         self.rot = (self.rot + degrees) % 360
 
+    def get_dict(self):
+
+        cls_hierarchy = []
+        to_visit = [self.__class__]
+        while to_visit:
+            cls = to_visit.pop()
+            if issubclass(cls, Part):
+                cls_hierarchy.append(cls)
+                to_visit.extend(cls.__bases__)
+
+        fields = []
+        for cls in cls_hierarchy[::-1]:
+            fields.extend(getattr(cls, "saved_fields", ()))
+
+        d = OrderedDict()
+        for field in fields:
+            value = getattr(self, field)
+            if isinstance(value, numpy.ndarray):
+                value = list(value)
+            d[field] = value
+        return d
+
     def __str__(self):
         name_str = ""
         if self.name:
@@ -157,6 +184,8 @@ class Part(object):
 
 
 class LinesPart(Part):
+    part_type = "Lines"
+    saved_fields = ("points",)
 
     def __init__(self, *args, **kwargs):
         self.points = kwargs.pop('points')
@@ -181,9 +210,10 @@ class LinesPart(Part):
 
 
 class CirclePart(Part):
+    part_type = "Circle"
+    saved_fields = ("radius",)
 
     def __init__(self, *args, **kwargs):
-        self.center = kwargs.pop('center')
         self.radius = kwargs.pop('radius')
         super(CirclePart, self).__init__(*args, **kwargs)
 
@@ -193,20 +223,20 @@ class CirclePart(Part):
         self.transform(ctx)
         self.set_draw_settings(ctx, **kwargs)
 
-        ctx.arc(self.center[0], self.center[1], self.radius, 0, math.pi*2)
+        ctx.arc(0, 0, self.radius, 0, math.pi*2)
         ctx.stroke()
 
     def _get_bbox(self):
-        points = (point1, point2)
-        xs = map(lambda p: p[0], points)
-        ys = map(lambda p: p[1], points)
+        l = self.radius + self.line_width
         return (
-            min(xs), min(ys),
-            max(xs)-min(xs), max(ys)-min(ys)
+            -l, -l,
+            l*2, l*2
         )
 
 
 class TransistorPart(Part):
+    part_type = "Transistor"
+    saved_fields = ("pmos",)
 
     def __init__(self, *args, **kwargs):
         self.pmos = kwargs.pop("pmos", False)
@@ -268,6 +298,7 @@ class TransistorPart(Part):
 
 
 class VddPart(Part):
+    part_type = "Vdd"
 
     def __init__(self, *args, **kwargs):
         super(VddPart, self).__init__(*args, **kwargs)
@@ -301,6 +332,7 @@ class VddPart(Part):
 
 
 class GndPart(Part):
+    part_type = "Gnd"
 
     def __init__(self, *args, **kwargs):
         super(GndPart, self).__init__(*args, **kwargs)
@@ -337,6 +369,7 @@ class GndPart(Part):
 
 
 class ProbePart(Part):
+    part_type = "Probe"
 
     def __init__(self, *args, **kwargs):
         super(ProbePart, self).__init__(*args, **kwargs)
@@ -377,6 +410,8 @@ class ProbePart(Part):
 
 
 class SwitchPart(Part):
+    part_type = "Switch"
+    saved_fields = ("outputs",)
 
     def __init__(self, *args, **kwargs):
         self.outputs = kwargs.pop('outputs', ("float", "high", "low", "contention"))
@@ -423,6 +458,7 @@ class SwitchPart(Part):
 
 
 class IOPart(Part):
+    part_type = "IO"
 
     def __init__(self, *args, **kwargs):
         super(IOPart, self).__init__(*args, **kwargs)
@@ -436,10 +472,12 @@ class IOPart(Part):
 
 class AggregatePart(Part):
 
-    def __init__(self, schematic, *args, **kwargs):
-        super(AggregatePart, self).__init__(*args, **kwargs)
+    def __init__(self, schematic, part_type, *args, **kwargs):
         self.schematic = schematic
         self.schematic.reset()
+        self.part_type = part_type
+
+        super(AggregatePart, self).__init__(*args, **kwargs)
 
         # Pairs terminals, connecting the terminals from the aggregate part to
         # the IO part terminals of the underlying schematic.

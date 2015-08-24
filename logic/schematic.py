@@ -10,16 +10,19 @@ import numpy
 import logic
 
 
-# Matches "part[term]" or just "part"
+# Matches "part[terminal]" or just "part"
+# group 1: part name
+# group 2: terminal name
 term_re = re.compile(r"^([^[]+)(\[([^\]]+)\])?$")
 
 
 class Schematic(object):
     """A collection of parts connected by nets."""
 
-    def __init__(self, parts=(), nets=()):
+    def __init__(self, parts=(), nets=(), name=None):
         self.parts = set(parts)
         self.nets = set(nets)
+        self.name = name
 
     def draw(self, context, selected=(), **kwargs):
         default_draw_connections = kwargs.get('draw_terminals', False)
@@ -216,6 +219,14 @@ class Schematic(object):
                 return part
         return None
 
+    def get_dict(self):
+        data = collections.OrderedDict()
+        if self.name:
+            data["name"] = self.name
+        data["parts"] = [p.get_dict() for p in self.parts]
+        data["nets"] = [n.get_dict() for n in self.nets]
+        return data
+
     @classmethod
     def from_json_str(cls, json_str):
         data = json.loads(json_str)
@@ -227,7 +238,7 @@ class Schematic(object):
         s = cls()
 
         for desc in data.get('parts', ()):
-            part_cls = logic.part_library[desc.pop('type')]
+            part_cls = logic.part_library[desc.pop('part_type')]
             part = part_cls(**desc)
             s.add_part(part)
 

@@ -2,28 +2,28 @@
     "name": "Not",
     "parts": [
         {
-            "type": "Vdd",
+            "part_type": "Vdd",
             "name": "vdd",
             "pos": [1, -5]
         }, {
-            "type": "Gnd",
+            "part_type": "Gnd",
             "name": "gnd",
             "pos": [1, 5]
         }, {
-            "type": "Transistor",
+            "part_type": "Transistor",
             "name": "t1",
             "pos": [0, 2]
         }, {
-            "type": "Transistor",
+            "part_type": "Transistor",
             "name": "t2",
             "pos": [0, -2],
             "pmos": true
         }, {
-            "type": "IO",
+            "part_type": "IO",
             "name": "in",
             "pos": [-2, 0]
         }, {
-            "type": "IO",
+            "part_type": "IO",
             "name": "out",
             "pos": [5, 0]
         }

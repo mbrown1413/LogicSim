@@ -1,14 +1,14 @@
 {
     "parts": [
         {
-            "type": "Switch",
+            "part_type": "Switch",
             "name": "s1",
             "pos": [-4, 0]
         }, {
-            "type": "Not",
+            "part_type": "Not",
             "name": "not"
         }, {
-            "type": "Probe",
+            "part_type": "Probe",
             "name": "p1",
             "pos": [8, 0]
         }

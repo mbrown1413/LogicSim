@@ -9,23 +9,23 @@ from partlib import PartLibrary
 
 import parts
 
-part_library = PartLibrary([
+part_library = PartLibrary((
 
     # Basic Circuitry
-    ("Transistor", parts.TransistorPart),
-    ("Vdd",        parts.VddPart),
-    ("Gnd",        parts.GndPart),
-    ("Probe",      parts.ProbePart),
-    ("Switch",     parts.SwitchPart),
-    ("IO",         parts.IOPart),
+    parts.TransistorPart,
+    parts.VddPart,
+    parts.GndPart,
+    parts.ProbePart,
+    parts.SwitchPart,
+    parts.IOPart,
 
     # Drawing
-    ("Lines", parts.LinesPart),
-    ("Circle", parts.CirclePart),
-    #"Text"),
-    #"Curve"),
+    parts.LinesPart,
+    parts.CirclePart,
+    #curve
+    #text
 
-])
+))
 
 import os
 part_library.load_file(

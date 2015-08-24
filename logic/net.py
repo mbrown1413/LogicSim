@@ -1,5 +1,6 @@
 
 from __future__ import division
+from collections import OrderedDict
 import math
 
 import numpy
@@ -245,6 +246,9 @@ class Net(object):
         closest_point = node1.pos + proj
         return numpy.linalg.norm(closest_point - point)
 
+    def get_dict(self):
+        return {"nodes": [n.get_dict() for n in self.nodes]}
+
     @classmethod
     def combine(cls, net1, term1, net2, term2):
         assert term1 in net1.terminals
@@ -290,3 +294,18 @@ class NetNode(object):
             return self._pos
         else:
             return self.terminal
+
+    def get_dict(self):
+        if self._pos is not None:
+            location = self._pos
+        else:
+            part = self.terminal.part
+            if len(part.terminals) == 1:
+                location = part.name
+            else:
+                location = "{}[{}]".format(part.name, self.terminal.name)
+
+        return OrderedDict((
+            ("location", location),
+            ("neighbors", self.neighbors),
+        ))
