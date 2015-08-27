@@ -56,7 +56,9 @@ class Net(object):
                     ctx.line_to(*self.nodes[j].pos)
                     lines_drawn.add(line)
 
-        ctx.set_line_width(0.1)
+        part_scales = map(lambda p: p.scale, self.parts)
+
+        ctx.set_line_width(0.1 * max(part_scales))
         if selected:
             ctx.set_source_rgb(0, 0, 1)
         else:
@@ -206,6 +208,11 @@ class Net(object):
             term = node.terminal
             if term is not None:
                 yield term
+
+    @property
+    def parts(self):
+        for term in self.terminals:
+            yield term.part
 
     def __str__(self):
         return "<Net {}>".format(' '.join([str(t)[1:-1] for t in self.terminals]))
