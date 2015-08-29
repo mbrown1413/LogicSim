@@ -389,13 +389,13 @@ class NetCreateAction(BaseDragAction):
 
     def on_drag_movement(self, widget, event):
         pos = self.widget.pos_widget_to_draw(event.x, event.y)
-        term = widget.schematic.get_closest_terminal(pos, search_dist=0.5)
+        term = widget.schematic.get_closest_terminal(pos, search_dist=0.5*self.start_term.part.scale)
         if term:
             end_pos = term.absolute_pos
         else:
             end_pos = widget.pos_widget_to_draw(event.x, event.y)
 
-        widget.ghost_part = logic.Net(self.start_pos, end_pos)
+        widget.ghost_part = logic.Net(self.start_pos, end_pos, scale=self.start_term.part.scale)
         widget.post_redraw()
 
     def on_drag_end(self, widget, event):

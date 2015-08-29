@@ -12,7 +12,10 @@ import _geometry
 class Net(object):
     draggable = False
 
-    def __init__(self, *items):
+    def __init__(self, *items, **kwargs):
+        self._scale = kwargs.pop("scale", None)
+        if kwargs:
+            raise ValueError("Unexpected keyword arguments: {}".format(kwargs))
         self._output = "float"
 
         self.nodes = []
@@ -56,9 +59,7 @@ class Net(object):
                     ctx.line_to(*self.nodes[j].pos)
                     lines_drawn.add(line)
 
-        part_scales = map(lambda p: p.scale, self.parts)
-
-        ctx.set_line_width(0.1 * max(part_scales))
+        ctx.set_line_width(0.1 * self.scale)
         if selected:
             ctx.set_source_rgb(0, 0, 1)
         else:
@@ -80,6 +81,14 @@ class Net(object):
                 ctx.arc(term.pos[0], term.pos[1], 0.1, 0, math.pi*2)
                 ctx.stroke()
                 ctx.restore()
+
+    @property
+    def scale(self):
+        if self._scale:
+            return self._scale
+        else:
+            part_scales = map(lambda p: p.scale, self.parts)
+            return max(part_scales) if part_scales else 1
 
     def get_bbox(self):
         left = top = float('inf')
@@ -217,8 +226,9 @@ class Net(object):
     def __str__(self):
         return "<Net {}>".format(' '.join([str(t)[1:-1] for t in self.terminals]))
 
-    def point_intersect(self, point, line_thickness=0.3):
+    def point_intersect(self, point, line_thickness=0.2):
         point = numpy.array(point)
+        line_thickness *= self.scale
 
         closest_dist = float("inf")
         lines_visited = set()

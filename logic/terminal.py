@@ -33,7 +33,7 @@ class Terminal(object):
 
     def point_intersect(self, point):
         dist = numpy.linalg.norm(point - self.absolute_pos)
-        return dist <= 0.16
+        return dist <= 0.16 * self.part.scale
 
     @property
     def absolute_pos(self):
