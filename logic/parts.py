@@ -478,11 +478,29 @@ class IOPart(Part):
     def __init__(self, *args, **kwargs):
         super(IOPart, self).__init__(*args, **kwargs)
         self.add_terminal("term", (0, 0))
+        self.r = 0.4
 
     def _get_bbox(self):
-        return (0, 0, 0, 0)
+        r = self.r + 0.1
+        return (
+            -r, -r,
+            r*2, r*2
+        )
 
-    #TODO: Make this an actually drawn, editable part
+    def _point_intersect(self, point):
+        return numpy.square(point).sum() <= self.r**2
+
+    def draw(self, ctx, **kwargs):
+        ctx.save()
+
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+        ctx.set_source_rgb(1, 0, 1)
+        ctx.arc(0, 0, self.r, 0, 2*math.pi)
+        ctx.fill()
+
+        ctx.restore()
+        super(IOPart, self).draw(ctx, **kwargs)
 
 
 class AggregatePart(Part):
