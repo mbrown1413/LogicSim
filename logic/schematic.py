@@ -26,8 +26,12 @@ class Schematic(object):
 
     def draw(self, context, selected=(), **kwargs):
         default_draw_connections = kwargs.get('draw_terminals', False)
+        draw_io_parts = kwargs.get('draw_io_parts', True)
 
         for part in self.parts:
+            if draw_io_parts and isinstance(part, logic.parts.IOPart):
+                continue
+
             if part in selected:
                 kwargs['draw_terminals'] = True
             else:

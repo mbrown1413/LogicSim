@@ -526,7 +526,7 @@ class AggregatePart(Part):
         kwargs['selected'] = ()
 
         self.transform(ctx)
-        self.schematic.draw(ctx, **kwargs)
+        self.schematic.draw(ctx, draw_io_parts=False, **kwargs)
 
     def update(self):
 
