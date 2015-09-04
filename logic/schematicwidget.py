@@ -78,7 +78,7 @@ class SchematicWidget(gtk.DrawingArea):
 
         if self.first_exposure:
             self.first_exposure = False
-            self.pan_to_parts()
+            self.fit_view()
 
         context = widget.window.cairo_create()
         context.rectangle(event.area.x, event.area.y,
@@ -170,7 +170,7 @@ class SchematicWidget(gtk.DrawingArea):
         self.draw_pos = (width/2, height/2) - self.pos_draw_to_widget(draw_pos)
         self.post_redraw()
 
-    def pan_to_parts(self, parts=None):
+    def fit_view(self, parts=None):
         if parts is None: parts = self.schematic.parts
         if not parts: return
 
@@ -183,8 +183,15 @@ class SchematicWidget(gtk.DrawingArea):
             top = min(top, bbox[1])
             bot = max(bot, bbox[1]+bbox[3])
         center = ((left+right)/2, (top+bot)/2)
+        box_w = right - left
+        box_h = bot - top
+        _, _, win_w, win_h = self.get_allocation()
 
         self.pan_to(center)
+        self.scale = -5 + min(
+            win_w / box_w,
+            win_h / box_h,
+        )
 
     def post_redraw(self):
         if self.window:
