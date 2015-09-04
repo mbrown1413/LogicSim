@@ -207,7 +207,7 @@ class DrawingPart(Part):
             ctx.set_source_rgb(*self.color)
         elif isinstance(self.color, basestring):
             term = self.parent_schematic.get_terminal_by_name(self.color)
-            ctx.set_source_rgb(*term.net.color)
+            ctx.set_source_rgb(*term.color)
         else:
             assert False
 
@@ -307,28 +307,46 @@ class TransistorPart(Part):
 
     def draw(self, ctx, **kwargs):
         super(TransistorPart, self).draw(ctx, **kwargs)
+        if kwargs.get("selected", False):
+            gate_color = src_color = drain_color = black_color = (0, 0, 1)
+        else:
+            gate_color = self["gate"].color
+            src_color = self["source"].color
+            drain_color = self["drain"].color
+            black_color = (0, 0, 0)
 
         self.transform(ctx)
         self.set_draw_settings(ctx, **kwargs)
 
+        ctx.set_source_rgb(*black_color)
         if self.pmos:
+            ctx.arc(-0.15, 0, 0.15, 0, 2*math.pi)
+            ctx.stroke()
+            ctx.set_source_rgb(*gate_color)
             ctx.move_to(-1, 0)
             ctx.line_to(-0.275, 0)
             ctx.stroke()
-            ctx.arc(-0.15, 0, 0.15, 0, 2*math.pi)
-            ctx.stroke()
         else:
+            ctx.set_source_rgb(*gate_color)
             ctx.move_to(-1, 0)
             ctx.line_to(0.1, 0)
             ctx.stroke()
 
+        ctx.set_source_rgb(*black_color)
         ctx.move_to(0.1, -0.75)
         ctx.line_to(0.1, 0.75)
+        ctx.move_to(0.375, 1)
+        ctx.line_to(0.375, -1)
+        ctx.stroke()
 
+        ctx.set_source_rgb(*drain_color)
         ctx.move_to(1, 2)
         ctx.line_to(1, 1)
         ctx.line_to(0.375, 1)
-        ctx.line_to(0.375, -1)
+        ctx.stroke()
+
+        ctx.set_source_rgb(*src_color)
+        ctx.move_to(0.375, -1)
         ctx.line_to(1, -1)
         ctx.line_to(1, -2)
         ctx.stroke()

@@ -36,6 +36,10 @@ class Terminal(object):
         return dist <= 0.16 * self.part.scale
 
     @property
+    def color(self):
+        return self.net.color if self.net else (0, 0, 0)
+
+    @property
     def absolute_pos(self):
         return self.part.point_schematic_to_object(self.pos)
 
