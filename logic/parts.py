@@ -24,8 +24,12 @@ class Part(object):
         self.name = name
         self.line_width = line_width
         self.terminals = {}
+        self.parent_schematic = None
 
         assert self.part_type is not None
+
+    def _register_schematic(self, schematic):
+        self.parent_schematic = schematic
 
     def __getitem__(self, name):
         return self.terminals[name]
@@ -184,7 +188,22 @@ class Part(object):
             term.reset()
 
 
-class LinesPart(Part):
+class DrawingPart(Part):
+
+    def __init__(self, *args, **kwargs):
+        self.color = kwargs.pop("color", (0, 0, 0))
+        super(DrawingPart, self).__init__(*args, **kwargs)
+
+    def set_draw_settings(self, ctx, **kwargs):
+        super(DrawingPart, self).set_draw_settings(ctx, **kwargs)
+        if isinstance(self.color, (tuple, list)):
+            ctx.set_source_rgb(*self.color)
+        elif isinstance(self.color, basestring):
+            term = self.parent_schematic.get_terminal_by_name(self.color)
+            ctx.set_source_rgb(*term.net.color)
+
+
+class LinesPart(DrawingPart):
     part_type = "Lines"
     saved_fields = ("points",)
 
@@ -224,7 +243,7 @@ class LinesPart(Part):
             yield (self.points[i-1], self.points[i])
 
 
-class CirclePart(Part):
+class CirclePart(DrawingPart):
     part_type = "Circle"
     saved_fields = ("radius",)
 

@@ -57,6 +57,7 @@ class Schematic(object):
         assert isinstance(part, logic.Part)
         part.reset()
         self.parts.add(part)
+        part._register_schematic(self)
 
     def add_parts(self, *parts):
         self.parts.update(parts)
@@ -223,6 +224,16 @@ class Schematic(object):
                 return part
         return None
 
+    def get_terminal_by_name(self, name):
+        match = term_re.match(name)
+        part = self.get_part_by_name(match.group(1))
+        assert part is not None
+        if match.group(3):
+            return part[match.group(3)]
+        else:
+            assert len(part.terminals) == 1
+            return part.terminals.values()[0]
+
     def get_dict(self):
         data = collections.OrderedDict()
         if self.name:
@@ -250,14 +261,7 @@ class Schematic(object):
             if isinstance(d['location'], list):
                 loc = d['location']
             elif isinstance(d['location'], basestring):
-                match = term_re.match(d['location'])
-                part = s.get_part_by_name(match.group(1))
-                assert part is not None
-                if match.group(3):
-                    loc = part[match.group(3)]
-                else:
-                    assert len(part.terminals) == 1
-                    loc = part.terminals.values()[0]
+                loc = s.get_terminal_by_name(d['location'])
             return logic.NetNode(loc, d['neighbors'])
 
         for desc in data.get('nets', ()):

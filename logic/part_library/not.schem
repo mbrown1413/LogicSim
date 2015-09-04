@@ -19,6 +19,7 @@
                 0, 
                 0
             ], 
+            "color": "out",
             "scale": 1, 
             "rot": 0, 
             "line_width": 0.1, 
@@ -40,6 +41,7 @@
                 0, 
                 0
             ], 
+            "color": "in",
             "scale": 1, 
             "rot": 0, 
             "line_width": 0.1, 

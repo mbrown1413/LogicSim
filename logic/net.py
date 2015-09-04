@@ -63,12 +63,7 @@ class Net(object):
         if selected:
             ctx.set_source_rgb(0, 0, 1)
         else:
-            ctx.set_source_rgb(*{
-                "high": (0, 1, 0),
-                "low": (0, 0, 0),
-                "contention": (1, 0, 0),
-                "float": (0.7, 0.7, 0.7),
-            }[self._output])
+            ctx.set_source_rgb(*self.color)
         ctx.stroke()
 
         if selected:
@@ -81,6 +76,15 @@ class Net(object):
                 ctx.arc(term.pos[0], term.pos[1], 0.1, 0, math.pi*2)
                 ctx.stroke()
                 ctx.restore()
+
+    @property
+    def color(self):
+        return {
+            "high": (0, 1, 0),
+            "low": (0, 0, 0),
+            "contention": (1, 0, 0),
+            "float": (0.7, 0.7, 0.7),
+        }[self._output]
 
     @property
     def scale(self):
