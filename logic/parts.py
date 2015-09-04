@@ -95,10 +95,16 @@ class Part(object):
         )
 
     def set_draw_settings(self, ctx, **kwargs):
+        self.set_color(ctx, **kwargs)
+        self.set_line_width(ctx, **kwargs)
+
+    def set_color(self, ctx, **kwargs):
         if kwargs.get('selected', False):
             ctx.set_source_rgb(0, 0, 1)
         else:
             ctx.set_source_rgb(0, 0, 0)
+
+    def set_line_width(self, ctx, **kwargs):
         ctx.set_line_width(self.line_width)
 
     def get_bbox(self):
@@ -194,13 +200,16 @@ class DrawingPart(Part):
         self.color = kwargs.pop("color", (0, 0, 0))
         super(DrawingPart, self).__init__(*args, **kwargs)
 
-    def set_draw_settings(self, ctx, **kwargs):
-        super(DrawingPart, self).set_draw_settings(ctx, **kwargs)
-        if isinstance(self.color, (tuple, list)):
+    def set_color(self, ctx, **kwargs):
+        if kwargs.get('selected', False):
+            ctx.set_source_rgb(0, 0, 1)
+        elif isinstance(self.color, (tuple, list)):
             ctx.set_source_rgb(*self.color)
         elif isinstance(self.color, basestring):
             term = self.parent_schematic.get_terminal_by_name(self.color)
             ctx.set_source_rgb(*term.net.color)
+        else:
+            assert False
 
 
 class LinesPart(DrawingPart):
@@ -542,7 +551,10 @@ class AggregatePart(Part):
     def draw(self, ctx, **kwargs):
         super(AggregatePart, self).draw(ctx, **kwargs)
         del kwargs['draw_terminals']
-        kwargs['selected'] = ()
+        if kwargs.get('selected', False):
+            kwargs['selected'] = filter(lambda p: isinstance(p, DrawingPart), self.schematic.parts)
+        else:
+            kwargs['selected'] = ()
 
         self.transform(ctx)
         self.schematic.draw(ctx, draw_io_parts=False, **kwargs)
