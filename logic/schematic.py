@@ -29,7 +29,7 @@ class Schematic(object):
         draw_io_parts = kwargs.get('draw_io_parts', True)
 
         for part in self.parts:
-            if draw_io_parts and isinstance(part, logic.parts.IOPart):
+            if not draw_io_parts and isinstance(part, logic.parts.IOPart):
                 continue
 
             if part in selected:
