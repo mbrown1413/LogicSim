@@ -20,7 +20,9 @@ class PartLibrary(OrderedDict):
 
     def load_dict(self, d):
         d = deepcopy(d)
-        part_type = d.pop('name')
+        part_type = d.pop('name', None)
+        if not part_type:
+            raise ValueError("Parts must have a name.")
         if part_type in self:
             raise ValueError('Duplicate part name: "{}"'.format(part_type))
 

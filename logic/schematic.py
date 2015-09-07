@@ -240,6 +240,8 @@ class Schematic(object):
             data["name"] = self.name
         data["parts"] = [p.get_dict() for p in self.parts]
         data["nets"] = [n.get_dict() for n in self.nets]
+        if self.name:
+            data['name'] = self.name
         return data
 
     @classmethod
@@ -250,7 +252,7 @@ class Schematic(object):
     @classmethod
     def from_dict(cls, data):
         data = deepcopy(data)
-        s = cls()
+        s = cls(name=data.get('name', None))
 
         for desc in data.get('parts', ()):
             part_cls = logic.part_library[desc.pop('part_type')]
