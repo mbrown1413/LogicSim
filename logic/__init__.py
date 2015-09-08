@@ -28,14 +28,7 @@ part_library = PartLibrary((
 ))
 
 import os
-part_library.load_file(
-    os.path.join(
-        os.path.dirname(__file__),
-        "part_library",
-        "not.schem",
-    )
+part_library.load_folder(
+    os.path.join(os.path.dirname(__file__), "part_library")
 )
-#part_library.load_folder(
-#    os.path.join(os.path.dirname(__file__), "part_library")
-#)
 del os

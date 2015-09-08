@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from copy import deepcopy
 import json
+import os
 
 import logic
 
@@ -37,4 +38,7 @@ class PartLibrary(OrderedDict):
         self.load_dict(data)
 
     def load_folder(self, path):
-        raise NotImplementedError()
+        for f in os.listdir(path):
+            f = os.path.join(path, f)
+            if os.path.isfile(f) and f.endswith(".schem"):
+                self.load_file(f)
