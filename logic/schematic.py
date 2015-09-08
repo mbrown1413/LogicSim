@@ -244,6 +244,16 @@ class Schematic(object):
             data['name'] = self.name
         return data
 
+    def make_unique_part_name(self, part):
+        part_names = set([p.name for p in self.parts])
+
+        i = 0
+        while True:
+            name = "{}-{}".format(part.part_type, i)
+            if name not in part_names:
+                return name
+            i += 1
+
     @classmethod
     def from_json_str(cls, json_str):
         data = json.loads(json_str)

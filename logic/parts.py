@@ -31,6 +31,10 @@ class Part(object):
     def _register_schematic(self, schematic):
         self.parent_schematic = schematic
 
+        # Give unique name if none was given
+        if self.name is None:
+            self.name = self.parent_schematic.make_unique_part_name(self)
+
     def __getitem__(self, name):
         return self.terminals[name]
 
