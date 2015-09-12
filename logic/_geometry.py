@@ -3,6 +3,17 @@ import numpy
 
 
 def line_distance_from_point(point, point1, point2):
+    """
+    Get the closest distance between `point` and the line through `point1` and
+    `point2`.
+    """
+    closest_point = line_get_closest_point(point, point1, point2)
+    return numpy.linalg.norm(closest_point - point)
+
+def line_get_closest_point(point, point1, point2):
+    """
+    Get point closest to `point` on the line through `point1`, `point2`.
+    """
     v1 = numpy.array(point2) - numpy.array(point1)
     v2 = point - numpy.array(point1)
 
@@ -18,5 +29,4 @@ def line_distance_from_point(point, point1, point2):
     if proj.dot(v1) < 0 or numpy.linalg.norm(proj) > numpy.linalg.norm(v1):
         return float("inf")
 
-    closest_point = point1 + proj
-    return numpy.linalg.norm(closest_point - point)
+    return point1 + proj

@@ -45,9 +45,11 @@ class SchematicWidget(gtk.DrawingArea):
 
             # Mouse Actions
             NetCreateAction(mouse_button=1),
+            NetDragNodeAction(mouse_button=1),
             PartDragAction(mouse_button=1),
             PanDragAction(mouse_button=1),
             SelectAction(mouse_button=1),
+            NetAddNodeAction(mouse_button=2),
 
             ZoomAction(),
 
@@ -261,7 +263,7 @@ class SelectAction(BaseAction):
 
     def on_button_release(self, widget, event):
 
-        if event.button == 1:
+        if event.button == self.mouse_button:
             pos = widget.pos_widget_to_draw(event.x, event.y)
             widget.selected = widget.schematic.part_at_pos(pos)
             widget.post_redraw()
@@ -381,13 +383,14 @@ class NetCreateAction(BaseDragAction):
     def should_start_drag(self, widget, event):
         if not isinstance(widget.selected, logic.Part):
             return False
+        part = widget.selected
 
         draw_pos = widget.pos_widget_to_draw(event.x, event.y)
-        for term in widget.selected.terminals.itervalues():
-            if term.point_intersect(draw_pos):
-                self.start_term = term
-                self.start_pos = term.absolute_pos
-                return True
+        terminal = part.point_intersect_terminals(draw_pos)
+        if terminal:
+            self.start_term = terminal
+            self.start_pos = terminal.absolute_pos
+            return True
 
         return False
 
@@ -417,6 +420,47 @@ class NetCreateAction(BaseDragAction):
         widget.draw_all_terminals = False
         widget.ghost_part = None
         widget.post_redraw()
+
+class NetAddNodeAction(BaseAction):
+    parameters = ("mouse_button",)
+
+    def on_button_release(self, widget, event):
+        if event.button != self.mouse_button or \
+                not isinstance(widget.selected, logic.Net):
+            return False
+
+        net = widget.selected
+        pos = widget.pos_widget_to_draw(event.x, event.y)
+        intersection = net.point_intersect(pos)
+        if intersection is not False:
+            node_idx1, node_idx2, point = intersection
+            net.add_floating_node(node_idx1, node_idx2, point)
+            widget.post_redraw()
+            return True
+
+class NetDragNodeAction(BaseDragAction):
+
+    def should_start_drag(self, widget, event):
+        if not isinstance(widget.selected, logic.Net):
+            return False
+
+        net = widget.selected
+        draw_pos = widget.pos_widget_to_draw(event.x, event.y)
+        node = net.point_intersect_nodes(draw_pos)
+        if node and node.internal:
+            self.net = net
+            self.node = node
+            return True
+
+        return False
+
+    def on_drag_movement(self, widget, event):
+        draw_pos = widget.pos_widget_to_draw(event.x, event.y)
+        self.node.pos = widget.snap_to_grid(draw_pos)
+        widget.post_redraw()
+
+    def on_drag_end(self, widget, event):
+        self.net.simplify_nodes()
 
 class PanAction(BaseAction):
     parameters = ("left", "up", "right", "down",)

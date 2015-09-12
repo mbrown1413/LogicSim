@@ -137,6 +137,11 @@ class Part(object):
         return point[0] >= left and point[1] >= top and \
                point[0] <= right and point[1] <= bottom
 
+    def point_intersect_terminals(self, point):
+        for terminal in self.terminals.itervalues():
+            if terminal.point_intersect(point):
+                return terminal
+
     def rotate(self, degrees):
         self.rot = (self.rot + degrees) % 360
 

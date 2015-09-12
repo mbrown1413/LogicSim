@@ -77,6 +77,10 @@ class Net(object):
                 ctx.stroke()
                 ctx.restore()
 
+            for node in self.internal_nodes:
+                ctx.arc(node.pos[0], node.pos[1], 0.1*self.scale, 0, math.pi*2)
+                ctx.stroke()
+
     @property
     def color(self):
         return {
@@ -223,6 +227,12 @@ class Net(object):
                 yield term
 
     @property
+    def internal_nodes(self):
+        for node in self.nodes:
+            if node.terminal is None:
+                yield node
+
+    @property
     def parts(self):
         for term in self.terminals:
             yield term.part
@@ -234,7 +244,6 @@ class Net(object):
         point = numpy.array(point)
         line_thickness *= self.scale
 
-        closest_dist = float("inf")
         lines_visited = set()
         for i, node in enumerate(self.nodes):
             for j in node.neighbors:
@@ -244,12 +253,61 @@ class Net(object):
 
                     node1 = self.nodes[i]
                     node2 = self.nodes[j]
-                    dist = _geometry.line_distance_from_point(point, node1.pos, node2.pos)
-                    if dist < closest_dist:
-                        closest_dist = dist
+                    closest_point = _geometry.line_get_closest_point(point, node1.pos, node2.pos)
+                    dist = numpy.linalg.norm(closest_point - point)
                     if dist <= line_thickness / 2:
-                        return True
+                        return i, j, closest_point
         return False
+
+    def point_intersect_nodes(self, point):
+        """Return node that intersects with `point`, or None."""
+        for node in self.nodes:
+            scale = self.scale if node.internal else node.terminal.part.scale
+            dist = numpy.linalg.norm(point - node.pos)
+            if dist <= 0.16 * scale:
+                return node
+
+    def add_floating_node(self, n1_idx, n2_idx, pos):
+        """
+        Add a node at `pos` that's not connected to a terminal between the
+        nodes with index `n1_idx` and `n2_idx`.
+        """
+        n1 = self.nodes[n1_idx]
+        n2 = self.nodes[n2_idx]
+
+        new_n = NetNode(pos, (n1_idx, n2_idx))
+        new_idx = len(self.nodes)
+        self.nodes.append(new_n)
+
+        # Rewrite nodes pointing between n1 & n1 to point to new_n
+        for i in range(len(n1.neighbors)):
+            if n1.neighbors[i] == n2_idx:
+                n1.neighbors[i] = new_idx
+        for i in range(len(n2.neighbors)):
+            if n2.neighbors[i] == n1_idx:
+                n2.neighbors[i] = new_idx
+
+    def simplify_nodes(self):
+        pass  #TODO
+        """
+        node_positions = {}
+        for node in self.nodes:
+            if node.pos in node_positions:
+                self.combine_nodes(node, node_positions[node.pos])
+            else:
+                node_positions[node.pos] = node
+
+    def combine_nodes(self, n1, n2):
+        if n1.external:
+            n1, n2 = n2, n1
+        if n1.external:
+            # Fail if both are external
+            return False
+
+        if n2.external:  # n1 is internal, n2 is external
+        else:  # Both are internal
+        """
+
 
     def get_dict(self):
         return {"nodes": [n.get_dict() for n in self.nodes]}
@@ -293,12 +351,25 @@ class NetNode(object):
         else:
             return self.terminal.part.point_schematic_to_object(self.terminal.pos)
 
+    @pos.setter
+    def pos(self, value):
+        assert None not in (self._pos, value)
+        self._pos = value
+
     @property
     def pos_or_terminal(self):
         if self._pos is not None:
             return self._pos
         else:
             return self.terminal
+
+    @property
+    def internal(self):
+        return self._pos is not None
+
+    @property
+    def external(self):
+        return not self.internal
 
     def get_dict(self):
         if self._pos is not None:
