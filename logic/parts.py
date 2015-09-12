@@ -199,6 +199,7 @@ class Part(object):
 
 
 class DrawingPart(Part):
+    saved_fields = ("color",)
 
     def __init__(self, *args, **kwargs):
         self.color = kwargs.pop("color", (0, 0, 0))
@@ -265,8 +266,6 @@ class CirclePart(DrawingPart):
         super(CirclePart, self).__init__(*args, **kwargs)
 
     def draw(self, ctx, **kwargs):
-        super(CirclePart, self).draw(ctx, **kwargs)
-
         self.transform(ctx)
         self.set_draw_settings(ctx, **kwargs)
 
@@ -279,6 +278,33 @@ class CirclePart(DrawingPart):
             -l, -l,
             l*2, l*2
         )
+
+
+class CurvePart(DrawingPart):
+    part_type = "Curve"
+    saved_fields = ("start", "ctrl1", "ctrl2", "end")
+
+    def __init__(self, *args, **kwargs):
+        self.start = kwargs.pop("start")
+        self.ctrl1 = kwargs.pop("ctrl1")
+        self.ctrl2 = kwargs.pop("ctrl2")
+        self.end = kwargs.pop("end")
+        super(CurvePart, self).__init__(*args, **kwargs)
+
+    def draw(self, ctx, **kwargs):
+        self.transform(ctx)
+        self.set_draw_settings(ctx, **kwargs)
+
+        ctx.move_to(*self.start)
+        ctx.curve_to(
+            self.ctrl1[0], self.ctrl1[1],
+            self.ctrl2[0], self.ctrl2[1],
+            self.end[0], self.end[1]
+        )
+        ctx.stroke()
+
+    def _get_bbox(self):
+        return (0, 0, 0, 0)  #TODO
 
 
 class TransistorPart(Part):

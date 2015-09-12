@@ -22,7 +22,7 @@ part_library = PartLibrary((
     # Drawing
     parts.LinesPart,
     parts.CirclePart,
-    #curve
+    parts.CurvePart,
     #text
 
 ))
