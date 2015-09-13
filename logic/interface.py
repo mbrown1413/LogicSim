@@ -31,6 +31,7 @@ class Interface(gtk.Window):
             ("View", OrderedDict((
                 ("Grid Size +", lambda _: self.schematic_widget.change_grid_size(2)),
                 ("Grid Size -", lambda _: self.schematic_widget.change_grid_size(0.5)),
+                ("Fit View", lambda _: self.schematic_widget.fit_view()),
             ))),
             ("Add", OrderedDict()),  # Filled in later automatically
             ("Part", OrderedDict((

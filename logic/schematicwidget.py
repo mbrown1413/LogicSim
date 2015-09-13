@@ -169,7 +169,7 @@ class SchematicWidget(gtk.DrawingArea):
 
     def pan_to(self, draw_pos):
         _, _, width, height = self.get_allocation()
-        self.draw_pos = (width/2, height/2) - self.pos_draw_to_widget(draw_pos)
+        self.draw_pos = (width/2, height/2) - self.scale*numpy.array(draw_pos)
         self.post_redraw()
 
     def fit_view(self, parts=None):
@@ -189,11 +189,11 @@ class SchematicWidget(gtk.DrawingArea):
         box_h = bot - top
         _, _, win_w, win_h = self.get_allocation()
 
-        self.pan_to(center)
         self.scale = -5 + min(
             win_w / box_w,
             win_h / box_h,
         )
+        self.pan_to(center)
 
     def post_redraw(self):
         if self.window:
@@ -513,7 +513,7 @@ class SimpleActions(BaseAction):
             widget.post_redraw()
 
         elif event.keyval == ord('='):  # Reset Zoom
-            widget.zoom_set(1)
+            widget.zoom_set(20)
 
         elif event.keyval == ord(' '):  # Activate part
             if isinstance(widget.selected, logic.Part):
