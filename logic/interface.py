@@ -89,7 +89,8 @@ class Interface(gtk.Window):
         self.show_all()
 
     def save_schematic(self, filename):
-        contents = json.dumps(self.schematic.get_dict(), indent=4, cls=_json.JsonEncoder)
+        contents = json.dumps(self.schematic.get_dict(),
+                indent=4, separators=(',', ': '), cls=_json.JsonEncoder)
         open(filename, "w").write(contents)
 
     def run(self):

@@ -2,85 +2,96 @@
     "name": "Not",
     "parts": [
         {
-            "part_type": "Vdd", 
-            "name": "vdd", 
+            "part_type": "Lines",
+            "name": "Lines-0",
             "pos": [
-                -0.625, 
-                -0.625
-            ], 
-            "scale": 0.125, 
-            "rot": 0, 
-            "line_width": 0.1
-        }, 
-        {
-            "part_type": "Lines", 
-            "name": null, 
-            "pos": [
-                0, 
+                0,
                 0
-            ], 
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
             "color": "out",
-            "scale": 1, 
-            "rot": 0, 
-            "line_width": 0.1, 
             "points": [
                 [
-                    1.4, 
+                    1.4,
                     0
-                ], 
+                ],
                 [
-                    2, 
+                    2,
                     0
                 ]
             ]
-        }, 
+        },
         {
-            "part_type": "Lines", 
-            "name": null, 
+            "part_type": "Lines",
+            "name": "Lines-1",
             "pos": [
-                0, 
+                0,
                 0
-            ], 
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
             "color": "in",
-            "scale": 1, 
-            "rot": 0, 
-            "line_width": 0.1, 
             "points": [
                 [
-                    -2, 
+                    -2,
                     0
-                ], 
+                ],
                 [
-                    -1, 
+                    -1,
                     0
                 ]
             ]
-        }, 
+        },
         {
-            "part_type": "Lines", 
-            "name": null, 
+            "part_type": "Circle",
+            "name": "Circle-0",
             "pos": [
-                0, 
+                1.25,
+                0.0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": [
+                0,
+                0,
                 0
-            ], 
-            "scale": 1, 
-            "rot": 0, 
-            "line_width": 0.1, 
+            ],
+            "radius": 0.15
+        },
+        {
+            "part_type": "Lines",
+            "name": "Lines-2",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": [
+                0,
+                0,
+                0
+            ],
             "points": [
                 [
-                    -1, 
+                    -1,
                     -1
-                ], 
+                ],
                 [
-                    -1, 
+                    -1,
                     1
-                ], 
+                ],
                 [
-                    1, 
+                    1,
                     0
-                ], 
+                ],
                 [
-                    -1, 
+                    -1,
                     -1
                 ],
                 [
@@ -88,162 +99,161 @@
                     1
                 ]
             ]
-        }, 
+        },
         {
-            "part_type": "Transistor", 
-            "name": "t2", 
+            "part_type": "Transistor",
+            "name": "t2",
             "pos": [
-                -0.75, 
+                -0.75,
                 -0.25
-            ], 
-            "scale": 0.125, 
-            "rot": 0, 
-            "line_width": 0.1, 
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1,
             "pmos": true
-        }, 
+        },
         {
-            "part_type": "Transistor", 
-            "name": "t1", 
+            "part_type": "IO",
+            "name": "out",
             "pos": [
-                -0.75, 
-                0.25
-            ], 
-            "scale": 0.125, 
-            "rot": 0, 
-            "line_width": 0.1, 
-            "pmos": false
-        }, 
-        {
-            "part_type": "IO", 
-            "name": "out", 
-            "pos": [
-                2.0, 
+                2.0,
                 0.0
-            ], 
-            "scale": 0.125, 
-            "rot": 0, 
+            ],
+            "scale": 0.125,
+            "rot": 0,
             "line_width": 0.1
-        }, 
+        },
         {
-            "part_type": "Gnd", 
-            "name": "gnd", 
+            "part_type": "Gnd",
+            "name": "gnd",
             "pos": [
-                -0.625, 
+                -0.625,
                 0.625
-            ], 
-            "scale": 0.125, 
-            "rot": 0, 
+            ],
+            "scale": 0.125,
+            "rot": 0,
             "line_width": 0.1
-        }, 
+        },
         {
-            "part_type": "Circle", 
-            "name": null, 
+            "part_type": "Vdd",
+            "name": "vdd",
             "pos": [
-                1.25, 
-                0.0
-            ], 
-            "scale": 1, 
-            "rot": 0, 
-            "line_width": 0.1, 
-            "radius": 0.15
-        }, 
+                -0.625,
+                -0.625
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
         {
-            "part_type": "IO", 
-            "name": "in", 
+            "part_type": "Transistor",
+            "name": "t1",
             "pos": [
-                -2, 
+                -0.75,
+                0.25
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1,
+            "pmos": false
+        },
+        {
+            "part_type": "IO",
+            "name": "in",
+            "pos": [
+                -2,
                 0
-            ], 
-            "scale": 0.125, 
-            "rot": 0, 
+            ],
+            "scale": 0.125,
+            "rot": 0,
             "line_width": 0.1
         }
-    ], 
+    ],
     "nets": [
         {
             "nodes": [
                 {
-                    "location": "t2[drain]", 
+                    "location": "gnd",
                     "neighbors": [
                         1
                     ]
-                }, 
+                },
                 {
-                    "location": "out", 
+                    "location": "t1[drain]",
+                    "neighbors": [
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "t2[drain]",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "out",
                     "neighbors": [
                         0,
                         2
                     ]
-                }, 
+                },
                 {
-                    "location": "t1[source]", 
+                    "location": "t1[source]",
                     "neighbors": [
                         1
                     ]
                 }
             ]
-        }, 
+        },
         {
             "nodes": [
                 {
-                    "location": "in", 
+                    "location": "vdd",
                     "neighbors": [
                         1
                     ]
-                }, 
+                },
+                {
+                    "location": "t2[source]",
+                    "neighbors": [
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "in",
+                    "neighbors": [
+                        1
+                    ]
+                },
                 {
                     "location": [
-                        -0.88, 
+                        -0.88,
                         0
-                    ], 
+                    ],
                     "neighbors": [
-                        0, 
-                        2, 
+                        0,
+                        2,
                         3
                     ]
-                }, 
+                },
                 {
-                    "location": "t1[gate]", 
+                    "location": "t1[gate]",
                     "neighbors": [
                         1
                     ]
-                }, 
+                },
                 {
-                    "location": "t2[gate]", 
+                    "location": "t2[gate]",
                     "neighbors": [
                         1
-                    ]
-                }
-            ]
-        }, 
-        {
-            "nodes": [
-                {
-                    "location": "gnd", 
-                    "neighbors": [
-                        1
-                    ]
-                }, 
-                {
-                    "location": "t1[drain]", 
-                    "neighbors": [
-                        0
-                    ]
-                }
-            ]
-        }, 
-        {
-            "nodes": [
-                {
-                    "location": "vdd", 
-                    "neighbors": [
-                        1 
-                    ]
-                }, 
-                {
-                    "location": "t2[source]", 
-                    "neighbors": [
-                        0
                     ]
                 }
             ]

@@ -3,26 +3,74 @@
         {
             "part_type": "Switch",
             "name": "s1",
-            "pos": [-4, 0]
-        }, {
+            "pos": [
+                -4,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "outputs": [
+                "float",
+                "high",
+                "low",
+                "contention"
+            ]
+        },
+        {
             "part_type": "Not",
-            "name": "not"
-        }, {
+            "name": "not",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
             "part_type": "Probe",
             "name": "p1",
-            "pos": [8, 0]
+            "pos": [
+                8,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1
         }
     ],
     "nets": [
         {
             "nodes": [
-                {"location": "s1", "neighbors": [1]},
-                {"location": "not[in]", "neighbors": [0]}
+                {
+                    "location": "s1",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "not[in]",
+                    "neighbors": [
+                        0
+                    ]
+                }
             ]
-        }, {
+        },
+        {
             "nodes": [
-                {"location": "not[out]", "neighbors": [1]},
-                {"location": "p1", "neighbors": [0]}
+                {
+                    "location": "not[out]",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "p1",
+                    "neighbors": [
+                        0
+                    ]
+                }
             ]
         }
     ]
