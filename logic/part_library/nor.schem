@@ -2,16 +2,15 @@
     "name": "Nor",
     "parts": [
         {
-            "part_type": "Transistor",
-            "name": "Transistor-0",
+            "part_type": "PmosTransistor",
+            "name": "PmosTransistor-0",
             "pos": [
                 -0.125,
                 -0.25
             ],
             "scale": 0.125,
             "rot": 0,
-            "line_width": 0.1,
-            "pmos": true
+            "line_width": 0.1
         },
         {
             "part_type": "Circle",
@@ -85,16 +84,15 @@
             ]
         },
         {
-            "part_type": "Transistor",
-            "name": "Transistor-2",
+            "part_type": "NmosTransistor",
+            "name": "NmosTransistor-0",
             "pos": [
                 0.125,
                 1.0
             ],
             "scale": 0.125,
             "rot": 0,
-            "line_width": 0.1,
-            "pmos": false
+            "line_width": 0.1
         },
         {
             "part_type": "Lines",
@@ -189,16 +187,15 @@
             "line_width": 0.1
         },
         {
-            "part_type": "Transistor",
-            "name": "Transistor-1",
+            "part_type": "NmosTransistor",
+            "name": "NmosTransistor-1",
             "pos": [
                 -0.75,
                 1.0
             ],
             "scale": 0.125,
             "rot": 0,
-            "line_width": 0.1,
-            "pmos": false
+            "line_width": 0.1
         },
         {
             "part_type": "Lines",
@@ -270,16 +267,15 @@
             "line_width": 0.1
         },
         {
-            "part_type": "Transistor",
-            "name": "Transistor-3",
+            "part_type": "PmosTransistor",
+            "name": "PmosTransistor-1",
             "pos": [
                 -0.125,
                 -1.0
             ],
             "scale": 0.125,
             "rot": 0,
-            "line_width": 0.1,
-            "pmos": true
+            "line_width": 0.1
         },
         {
             "part_type": "Curve",
@@ -340,7 +336,7 @@
         {
             "nodes": [
                 {
-                    "location": "Transistor-0[gate]",
+                    "location": "PmosTransistor-0[gate]",
                     "neighbors": [
                         3
                     ]
@@ -353,7 +349,7 @@
                     ]
                 },
                 {
-                    "location": "Transistor-1[gate]",
+                    "location": "NmosTransistor-1[gate]",
                     "neighbors": [
                         1
                     ]
@@ -383,7 +379,7 @@
         {
             "nodes": [
                 {
-                    "location": "Transistor-3[source]",
+                    "location": "PmosTransistor-1[source]",
                     "neighbors": [
                         1
                     ]
@@ -399,13 +395,13 @@
         {
             "nodes": [
                 {
-                    "location": "Transistor-0[source]",
+                    "location": "PmosTransistor-0[source]",
                     "neighbors": [
                         1
                     ]
                 },
                 {
-                    "location": "Transistor-3[drain]",
+                    "location": "PmosTransistor-1[drain]",
                     "neighbors": [
                         0
                     ]
@@ -415,20 +411,20 @@
         {
             "nodes": [
                 {
-                    "location": "Transistor-1[source]",
+                    "location": "NmosTransistor-1[source]",
                     "neighbors": [
                         1,
                         4
                     ]
                 },
                 {
-                    "location": "Transistor-2[source]",
+                    "location": "NmosTransistor-0[source]",
                     "neighbors": [
                         0
                     ]
                 },
                 {
-                    "location": "Transistor-0[drain]",
+                    "location": "PmosTransistor-0[drain]",
                     "neighbors": [
                         5,
                         3
@@ -465,7 +461,7 @@
         {
             "nodes": [
                 {
-                    "location": "Transistor-3[gate]",
+                    "location": "PmosTransistor-1[gate]",
                     "neighbors": [
                         1
                     ]
@@ -478,7 +474,7 @@
                     ]
                 },
                 {
-                    "location": "Transistor-2[gate]",
+                    "location": "NmosTransistor-0[gate]",
                     "neighbors": [
                         4
                     ]
@@ -515,13 +511,13 @@
                     ]
                 },
                 {
-                    "location": "Transistor-2[drain]",
+                    "location": "NmosTransistor-0[drain]",
                     "neighbors": [
                         0
                     ]
                 },
                 {
-                    "location": "Transistor-1[drain]",
+                    "location": "NmosTransistor-1[drain]",
                     "neighbors": [
                         0
                     ]

@@ -312,13 +312,12 @@ class CurvePart(DrawingPart):
         return (0, 0, 0, 0)  #TODO
 
 
-class TransistorPart(Part):
-    part_type = "Transistor"
-    saved_fields = ("pmos",)
+class NmosTransistorPart(Part):
+    part_type = "NmosTransistor"
 
     def __init__(self, *args, **kwargs):
-        self.pmos = kwargs.pop("pmos", False)
-        super(TransistorPart, self).__init__(*args, **kwargs)
+        self.pmos = kwargs.pop("_pmos", False)
+        super(NmosTransistorPart, self).__init__(*args, **kwargs)
         self.add_terminal("gate", (-1, 0))
         self.add_terminal("source", (1, -2))
         self.add_terminal("drain", (1, 2))
@@ -341,7 +340,7 @@ class TransistorPart(Part):
             d.output = "float"
 
     def draw(self, ctx, **kwargs):
-        super(TransistorPart, self).draw(ctx, **kwargs)
+        super(NmosTransistorPart, self).draw(ctx, **kwargs)
         if kwargs.get("selected", False):
             gate_color = src_color = drain_color = black_color = (0, 0, 1)
         else:
@@ -391,6 +390,14 @@ class TransistorPart(Part):
             -1, -2,
             2, 4
         )
+
+
+class PmosTransistorPart(NmosTransistorPart):
+    part_type = "PmosTransistor"
+
+    def __init__(self, *args, **kwargs):
+        kwargs['_pmos'] = True
+        super(PmosTransistorPart, self).__init__(*args, **kwargs)
 
 
 class VddPart(Part):

@@ -12,7 +12,8 @@ import parts
 part_library = PartLibrary((
 
     # Basic Circuitry
-    parts.TransistorPart,
+    parts.NmosTransistorPart,
+    parts.PmosTransistorPart,
     parts.VddPart,
     parts.GndPart,
     parts.ProbePart,

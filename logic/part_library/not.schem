@@ -101,7 +101,7 @@
             ]
         },
         {
-            "part_type": "Transistor",
+            "part_type": "PmosTransistor",
             "name": "t2",
             "pos": [
                 -0.75,
@@ -109,8 +109,7 @@
             ],
             "scale": 0.125,
             "rot": 0,
-            "line_width": 0.1,
-            "pmos": true
+            "line_width": 0.1
         },
         {
             "part_type": "IO",
@@ -146,7 +145,7 @@
             "line_width": 0.1
         },
         {
-            "part_type": "Transistor",
+            "part_type": "NmosTransistor",
             "name": "t1",
             "pos": [
                 -0.75,
@@ -154,8 +153,7 @@
             ],
             "scale": 0.125,
             "rot": 0,
-            "line_width": 0.1,
-            "pmos": false
+            "line_width": 0.1
         },
         {
             "part_type": "IO",
