@@ -188,7 +188,7 @@ class Net(object):
                 node.neighbors.pop(r)
 
     def connect(self, *items):
-        node_items = [n.pos_or_terminal for n in self.nodes]
+        node_items = [n.terminal for n in self.nodes]
 
         connected_to_orig_nodes = False
         prev_node_idx = None
