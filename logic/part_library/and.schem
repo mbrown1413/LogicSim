@@ -1,0 +1,330 @@
+{
+    "name": "And",
+    "parts": [
+        {
+            "part_type": "Curve",
+            "name": "Curve-0",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": [
+                0,
+                0,
+                0
+            ],
+            "start": [
+                -1,
+                2
+            ],
+            "ctrl1": [
+                0,
+                2
+            ],
+            "ctrl2": [
+                2,
+                2
+            ],
+            "end": [
+                2,
+                0
+            ]
+        },
+        {
+            "part_type": "Curve",
+            "name": "Curve-1",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": [
+                0,
+                0,
+                0
+            ],
+            "start": [
+                2,
+                0
+            ],
+            "ctrl1": [
+                2,
+                -2
+            ],
+            "ctrl2": [
+                0,
+                -2
+            ],
+            "end": [
+                -1,
+                -2
+            ]
+        },
+        {
+            "part_type": "IO",
+            "name": "in2",
+            "pos": [
+                -3.0,
+                1.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Lines",
+            "name": "Lines-2",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": "in1",
+            "points": [
+                [
+                    -3,
+                    -1
+                ],
+                [
+                    -2,
+                    -1
+                ]
+            ]
+        },
+        {
+            "part_type": "Not",
+            "name": "Not-0",
+            "pos": [
+                1.0,
+                -0.0
+            ],
+            "scale": 0.25,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Nand",
+            "name": "Nand-0",
+            "pos": [
+                -0.5,
+                0.0
+            ],
+            "scale": 0.25,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Lines",
+            "name": "Lines-3",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": "out",
+            "points": [
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
+            ]
+        },
+        {
+            "part_type": "IO",
+            "name": "in1",
+            "pos": [
+                -3.0,
+                -1.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Lines",
+            "name": "Lines-0",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": [
+                0,
+                0,
+                0
+            ],
+            "points": [
+                [
+                    -1,
+                    -2
+                ],
+                [
+                    -2,
+                    -2
+                ],
+                [
+                    -2,
+                    2
+                ],
+                [
+                    -1,
+                    2
+                ]
+            ]
+        },
+        {
+            "part_type": "IO",
+            "name": "out",
+            "pos": [
+                3.0,
+                0.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Lines",
+            "name": "Lines-1",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": "in2",
+            "points": [
+                [
+                    -3,
+                    1
+                ],
+                [
+                    -2,
+                    1
+                ]
+            ]
+        }
+    ],
+    "nets": [
+        {
+            "nodes": [
+                {
+                    "location": "Nand-0[in1]",
+                    "neighbors": [
+                        3
+                    ]
+                },
+                {
+                    "location": "in1",
+                    "neighbors": [
+                        2
+                    ]
+                },
+                {
+                    "location": [
+                        -1.5,
+                        -1.0
+                    ],
+                    "neighbors": [
+                        3,
+                        1
+                    ]
+                },
+                {
+                    "location": [
+                        -1.5,
+                        -0.25
+                    ],
+                    "neighbors": [
+                        0,
+                        2
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "out",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "Not-0[out]",
+                    "neighbors": [
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "Nand-0[in2]",
+                    "neighbors": [
+                        3
+                    ]
+                },
+                {
+                    "location": "in2",
+                    "neighbors": [
+                        2
+                    ]
+                },
+                {
+                    "location": [
+                        -1.5,
+                        1.0
+                    ],
+                    "neighbors": [
+                        3,
+                        1
+                    ]
+                },
+                {
+                    "location": [
+                        -1.5,
+                        0.25
+                    ],
+                    "neighbors": [
+                        0,
+                        2
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "Not-0[in]",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "Nand-0[out]",
+                    "neighbors": [
+                        0
+                    ]
+                }
+            ]
+        }
+    ]
+}
