@@ -604,6 +604,7 @@ class AggregatePart(Part):
     def draw(self, ctx, **kwargs):
         super(AggregatePart, self).draw(ctx, **kwargs)
         del kwargs['draw_terminals']
+        if 'draw_io_parts' in kwargs: del kwargs['draw_io_parts']
         if kwargs.get('selected', False):
             kwargs['selected'] = filter(lambda p: isinstance(p, DrawingPart), self.schematic.parts)
         else:
