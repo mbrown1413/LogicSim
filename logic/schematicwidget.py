@@ -26,8 +26,10 @@ class SchematicWidget(gtk.DrawingArea):
     def __init__(self, schematic):
         gtk.DrawingArea.__init__(self)
         self.schematic = schematic
-        self.draw_pos = numpy.array((0, 0))  # Widget-space coordinate of the
-                                             # upper left corner of the canvas
+
+        # Widget-space coordinate of the upper left corner of the canvas
+        self.draw_pos = numpy.array((0, 0), dtype="float64")
+
         self.first_exposure = True
         self.scale = 20
         self.grid_size = 1
@@ -113,7 +115,7 @@ class SchematicWidget(gtk.DrawingArea):
         """
 
     def pos_widget_to_draw(self, x, y):
-        return (numpy.array((x, y)) - self.draw_pos) / self.scale
+        return (numpy.array((x, y), dtype="float64") - self.draw_pos) / self.scale
 
     def pos_draw_to_widget(self, widget_pos):
         return numpy.array(widget_pos)*self.scale + self.draw_pos
@@ -169,7 +171,8 @@ class SchematicWidget(gtk.DrawingArea):
 
     def pan_to(self, draw_pos):
         _, _, width, height = self.get_allocation()
-        self.draw_pos = (width/2, height/2) - self.scale*numpy.array(draw_pos)
+        draw_pos = numpy.array(draw_pos, dtype="float64")
+        self.draw_pos = (width/2, height/2) - self.scale*draw_pos
         self.post_redraw()
 
     def fit_view(self, parts=None):
