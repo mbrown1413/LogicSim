@@ -49,7 +49,9 @@ class Interface(gtk.Window):
             #TODO: Wow... talk about inefficient
             for name, cls in part_classes.iteritems():
                 if name == cls_name:
-                    self.schematic_widget.add_part(cls())
+                    part = cls()
+                    self.schematic_widget.selected = part
+                    self.schematic_widget.add_part(part)
                     break
         for name, part_cls in part_classes.iteritems():
             menu_description["Add"][name] = new_part_func
