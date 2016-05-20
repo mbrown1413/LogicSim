@@ -43,6 +43,7 @@ class Interface(gtk.Window):
         part_classes = dict(logic.part_library)
         del part_classes['Lines']
         del part_classes['Circle']
+        del part_classes['Curve']
         def new_part_func(menu):
             cls_name = menu.get_label()
             #TODO: Wow... talk about inefficient
