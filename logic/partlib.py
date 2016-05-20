@@ -34,8 +34,23 @@ class PartLibrary(OrderedDict):
         self[part_type] = create_part
 
     def load_file(self, filename):
-        data = json.loads(open(filename, 'r').read())
-        self.load_dict(data)
+        try:
+            contents = open(filename, 'r').read()
+        except:
+            print 'Error reading part file "{}": Could not read file.'.format(filename)
+            raise
+
+        try:
+            data = json.loads(contents)
+        except:
+            print 'Error reading part file "{}": Invalid JSON.'.format(filename)
+            raise
+
+        try:
+            self.load_dict(data)
+        except:
+            print 'Error reading part file "{}": Incorrect data.'.format(filename)
+            raise
 
     def load_folder(self, path):
         for f in os.listdir(path):
