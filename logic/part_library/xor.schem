@@ -2,6 +2,229 @@
     "name": "Xor",
     "parts": [
         {
+            "part_type": "IO",
+            "name": "out",
+            "pos": [
+                3.0,
+                -0.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "NmosTransistor",
+            "name": "NmosTransistor-0",
+            "pos": [
+                -0.5,
+                0.25
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Curve",
+            "name": "Curve-1",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": [
+                0,
+                0,
+                0
+            ],
+            "start": [
+                -1,
+                2
+            ],
+            "ctrl1": [
+                0,
+                2
+            ],
+            "ctrl2": [
+                1.5,
+                1
+            ],
+            "end": [
+                2,
+                0
+            ]
+        },
+        {
+            "part_type": "Gnd",
+            "name": "Gnd-0",
+            "pos": [
+                0.1875,
+                1.375
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "NmosTransistor",
+            "name": "NmosTransistor-3",
+            "pos": [
+                0.375,
+                0.25
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "IO",
+            "name": "in2",
+            "pos": [
+                -3.0,
+                1.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Lines",
+            "name": "Lines-0",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": [
+                0,
+                0,
+                0
+            ],
+            "points": [
+                [
+                    -2,
+                    2
+                ],
+                [
+                    -1,
+                    2
+                ]
+            ]
+        },
+        {
+            "part_type": "Vdd",
+            "name": "Vdd-0",
+            "pos": [
+                0.125,
+                -1.375
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Lines",
+            "name": "Lines-4",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": "in1",
+            "points": [
+                [
+                    -3,
+                    -1
+                ],
+                [
+                    -1.45,
+                    -1
+                ]
+            ]
+        },
+        {
+            "part_type": "IO",
+            "name": "in1",
+            "pos": [
+                -3.0,
+                -1.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Not",
+            "name": "Not-0",
+            "pos": [
+                -1.0,
+                -1.5
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "PmosTransistor",
+            "name": "PmosTransistor-0",
+            "pos": [
+                0.5,
+                -1.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "NmosTransistor",
+            "name": "NmosTransistor-2",
+            "pos": [
+                0.375,
+                1.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "PmosTransistor",
+            "name": "PmosTransistor-1",
+            "pos": [
+                -0.5,
+                -1.0
+            ],
+            "scale": 0.125,
+            "rot": 0,
+            "line_width": 0.1
+        },
+        {
+            "part_type": "Lines",
+            "name": "Lines-2",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": "out",
+            "points": [
+                [
+                    2,
+                    0
+                ],
+                [
+                    3,
+                    0
+                ]
+            ]
+        },
+        {
             "part_type": "Lines",
             "name": "Lines-1",
             "pos": [
@@ -67,11 +290,37 @@
             "line_width": 0.1
         },
         {
+            "part_type": "Lines",
+            "name": "Lines-3",
+            "pos": [
+                0,
+                0
+            ],
+            "scale": 1,
+            "rot": 0,
+            "line_width": 0.1,
+            "color": [
+                0,
+                0,
+                0
+            ],
+            "points": [
+                [
+                    -1,
+                    -2
+                ],
+                [
+                    -2,
+                    -2
+                ]
+            ]
+        },
+        {
             "part_type": "Not",
-            "name": "Not-0",
+            "name": "Not-1",
             "pos": [
                 -1.0,
-                -1.5
+                1.5
             ],
             "scale": 0.125,
             "rot": 0,
@@ -110,30 +359,15 @@
             ]
         },
         {
-            "part_type": "Lines",
-            "name": "Lines-3",
+            "part_type": "PmosTransistor",
+            "name": "PmosTransistor-3",
             "pos": [
-                0,
-                0
+                0.5,
+                -0.25
             ],
-            "scale": 1,
+            "scale": 0.125,
             "rot": 0,
-            "line_width": 0.1,
-            "color": [
-                0,
-                0,
-                0
-            ],
-            "points": [
-                [
-                    -1,
-                    -2
-                ],
-                [
-                    -2,
-                    -2
-                ]
-            ]
+            "line_width": 0.1
         },
         {
             "part_type": "NmosTransistor",
@@ -145,38 +379,6 @@
             "scale": 0.125,
             "rot": 0,
             "line_width": 0.1
-        },
-        {
-            "part_type": "Curve",
-            "name": "Curve-1",
-            "pos": [
-                0,
-                0
-            ],
-            "scale": 1,
-            "rot": 0,
-            "line_width": 0.1,
-            "color": [
-                0,
-                0,
-                0
-            ],
-            "start": [
-                -1,
-                2
-            ],
-            "ctrl1": [
-                0,
-                2
-            ],
-            "ctrl2": [
-                1.5,
-                1
-            ],
-            "end": [
-                2,
-                0
-            ]
         },
         {
             "part_type": "Curve",
@@ -209,462 +411,9 @@
                 -2,
                 2
             ]
-        },
-        {
-            "part_type": "NmosTransistor",
-            "name": "NmosTransistor-3",
-            "pos": [
-                0.5,
-                0.25
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "Lines",
-            "name": "Lines-4",
-            "pos": [
-                0,
-                0
-            ],
-            "scale": 1,
-            "rot": 0,
-            "line_width": 0.1,
-            "color": "in1",
-            "points": [
-                [
-                    -3,
-                    -1
-                ],
-                [
-                    -1.45,
-                    -1
-                ]
-            ]
-        },
-        {
-            "part_type": "IO",
-            "name": "in1",
-            "pos": [
-                -3.0,
-                -1.0
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "PmosTransistor",
-            "name": "PmosTransistor-0",
-            "pos": [
-                0.5,
-                -1.0
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "Lines",
-            "name": "Lines-0",
-            "pos": [
-                0,
-                0
-            ],
-            "scale": 1,
-            "rot": 0,
-            "line_width": 0.1,
-            "color": [
-                0,
-                0,
-                0
-            ],
-            "points": [
-                [
-                    -2,
-                    2
-                ],
-                [
-                    -1,
-                    2
-                ]
-            ]
-        },
-        {
-            "part_type": "NmosTransistor",
-            "name": "NmosTransistor-2",
-            "pos": [
-                0.5,
-                1.0
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "Not",
-            "name": "Not-1",
-            "pos": [
-                -1.0,
-                1.5
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "Lines",
-            "name": "Lines-2",
-            "pos": [
-                0,
-                0
-            ],
-            "scale": 1,
-            "rot": 0,
-            "line_width": 0.1,
-            "color": "out",
-            "points": [
-                [
-                    2,
-                    0
-                ],
-                [
-                    3,
-                    0
-                ]
-            ]
-        },
-        {
-            "part_type": "PmosTransistor",
-            "name": "PmosTransistor-3",
-            "pos": [
-                0.5,
-                -0.25
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "IO",
-            "name": "out",
-            "pos": [
-                3.0,
-                -0.0
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "Gnd",
-            "name": "Gnd-0",
-            "pos": [
-                0.25,
-                1.375
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "IO",
-            "name": "in2",
-            "pos": [
-                -3.0,
-                1.0
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "Vdd",
-            "name": "Vdd-0",
-            "pos": [
-                0.125,
-                -1.375
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "NmosTransistor",
-            "name": "NmosTransistor-0",
-            "pos": [
-                -0.5,
-                0.25
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
-        },
-        {
-            "part_type": "PmosTransistor",
-            "name": "PmosTransistor-1",
-            "pos": [
-                -0.5,
-                -1.0
-            ],
-            "scale": 0.125,
-            "rot": 0,
-            "line_width": 0.1
         }
     ],
     "nets": [
-        {
-            "nodes": [
-                {
-                    "location": "NmosTransistor-0[source]",
-                    "neighbors": [
-                        1
-                    ]
-                },
-                {
-                    "location": "PmosTransistor-2[drain]",
-                    "neighbors": [
-                        0,
-                        2
-                    ]
-                },
-                {
-                    "location": "PmosTransistor-3[drain]",
-                    "neighbors": [
-                        1,
-                        3,
-                        4
-                    ]
-                },
-                {
-                    "location": "NmosTransistor-3[source]",
-                    "neighbors": [
-                        2
-                    ]
-                },
-                {
-                    "location": "out",
-                    "neighbors": [
-                        2
-                    ]
-                }
-            ]
-        },
-        {
-            "nodes": [
-                {
-                    "location": "PmosTransistor-1[drain]",
-                    "neighbors": [
-                        1
-                    ]
-                },
-                {
-                    "location": "PmosTransistor-2[source]",
-                    "neighbors": [
-                        0
-                    ]
-                }
-            ]
-        },
-        {
-            "nodes": [
-                {
-                    "location": "NmosTransistor-2[gate]",
-                    "neighbors": [
-                        5
-                    ]
-                },
-                {
-                    "location": "Not-1[out]",
-                    "neighbors": [
-                        4,
-                        6
-                    ]
-                },
-                {
-                    "location": "PmosTransistor-2[gate]",
-                    "neighbors": [
-                        3
-                    ]
-                },
-                {
-                    "location": [
-                        -0.625,
-                        -0.25
-                    ],
-                    "neighbors": [
-                        6,
-                        2
-                    ]
-                },
-                {
-                    "location": [
-                        -0.125,
-                        1.5
-                    ],
-                    "neighbors": [
-                        5,
-                        1
-                    ]
-                },
-                {
-                    "location": [
-                        -0.125,
-                        1.0
-                    ],
-                    "neighbors": [
-                        0,
-                        4
-                    ]
-                },
-                {
-                    "location": [
-                        -0.625,
-                        1.5
-                    ],
-                    "neighbors": [
-                        1,
-                        3
-                    ]
-                }
-            ]
-        },
-        {
-            "nodes": [
-                {
-                    "location": "NmosTransistor-0[drain]",
-                    "neighbors": [
-                        1
-                    ]
-                },
-                {
-                    "location": "NmosTransistor-1[source]",
-                    "neighbors": [
-                        0
-                    ]
-                }
-            ]
-        },
-        {
-            "nodes": [
-                {
-                    "location": "NmosTransistor-1[gate]",
-                    "neighbors": [
-                        1
-                    ]
-                },
-                {
-                    "location": "in2",
-                    "neighbors": [
-                        0,
-                        8,
-                        4
-                    ]
-                },
-                {
-                    "location": "Not-1[in]",
-                    "neighbors": [
-                        8
-                    ]
-                },
-                {
-                    "location": "PmosTransistor-3[gate]",
-                    "neighbors": [
-                        7
-                    ]
-                },
-                {
-                    "location": [
-                        -0.75,
-                        1.0
-                    ],
-                    "neighbors": [
-                        1,
-                        5
-                    ]
-                },
-                {
-                    "location": [
-                        -0.75,
-                        -0.625
-                    ],
-                    "neighbors": [
-                        6,
-                        4
-                    ]
-                },
-                {
-                    "location": [
-                        0.25,
-                        -0.625
-                    ],
-                    "neighbors": [
-                        7,
-                        5
-                    ]
-                },
-                {
-                    "location": [
-                        0.25,
-                        -0.25
-                    ],
-                    "neighbors": [
-                        3,
-                        6
-                    ]
-                },
-                {
-                    "location": [
-                        -1.25,
-                        1.0
-                    ],
-                    "neighbors": [
-                        1,
-                        2
-                    ]
-                }
-            ]
-        },
-        {
-            "nodes": [
-                {
-                    "location": "NmosTransistor-3[drain]",
-                    "neighbors": [
-                        1
-                    ]
-                },
-                {
-                    "location": "NmosTransistor-2[source]",
-                    "neighbors": [
-                        0
-                    ]
-                }
-            ]
-        },
-        {
-            "nodes": [
-                {
-                    "location": "Vdd-0",
-                    "neighbors": [
-                        1,
-                        2
-                    ]
-                },
-                {
-                    "location": "PmosTransistor-1[source]",
-                    "neighbors": [
-                        0
-                    ]
-                },
-                {
-                    "location": "PmosTransistor-0[source]",
-                    "neighbors": [
-                        0
-                    ]
-                }
-            ]
-        },
         {
             "nodes": [
                 {
@@ -791,6 +540,177 @@
         {
             "nodes": [
                 {
+                    "location": "NmosTransistor-3[drain]",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "NmosTransistor-2[source]",
+                    "neighbors": [
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "NmosTransistor-2[gate]",
+                    "neighbors": [
+                        5
+                    ]
+                },
+                {
+                    "location": "Not-1[out]",
+                    "neighbors": [
+                        4,
+                        6
+                    ]
+                },
+                {
+                    "location": "PmosTransistor-2[gate]",
+                    "neighbors": [
+                        3
+                    ]
+                },
+                {
+                    "location": [
+                        -0.625,
+                        -0.25
+                    ],
+                    "neighbors": [
+                        6,
+                        2
+                    ]
+                },
+                {
+                    "location": [
+                        -0.125,
+                        1.5
+                    ],
+                    "neighbors": [
+                        5,
+                        1
+                    ]
+                },
+                {
+                    "location": [
+                        -0.125,
+                        1.0
+                    ],
+                    "neighbors": [
+                        0,
+                        4
+                    ]
+                },
+                {
+                    "location": [
+                        -0.625,
+                        1.5
+                    ],
+                    "neighbors": [
+                        1,
+                        3
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "Vdd-0",
+                    "neighbors": [
+                        1,
+                        2
+                    ]
+                },
+                {
+                    "location": "PmosTransistor-1[source]",
+                    "neighbors": [
+                        0
+                    ]
+                },
+                {
+                    "location": "PmosTransistor-0[source]",
+                    "neighbors": [
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "NmosTransistor-0[source]",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "PmosTransistor-2[drain]",
+                    "neighbors": [
+                        0,
+                        2
+                    ]
+                },
+                {
+                    "location": "PmosTransistor-3[drain]",
+                    "neighbors": [
+                        1,
+                        3,
+                        4
+                    ]
+                },
+                {
+                    "location": "NmosTransistor-3[source]",
+                    "neighbors": [
+                        2
+                    ]
+                },
+                {
+                    "location": "out",
+                    "neighbors": [
+                        2
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "NmosTransistor-0[drain]",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "NmosTransistor-1[source]",
+                    "neighbors": [
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "PmosTransistor-3[source]",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "PmosTransistor-0[drain]",
+                    "neighbors": [
+                        0
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
                     "location": "NmosTransistor-1[drain]",
                     "neighbors": [
                         1
@@ -814,13 +734,93 @@
         {
             "nodes": [
                 {
-                    "location": "PmosTransistor-3[source]",
+                    "location": "NmosTransistor-1[gate]",
                     "neighbors": [
                         1
                     ]
                 },
                 {
-                    "location": "PmosTransistor-0[drain]",
+                    "location": "in2",
+                    "neighbors": [
+                        0,
+                        8,
+                        4
+                    ]
+                },
+                {
+                    "location": "Not-1[in]",
+                    "neighbors": [
+                        8
+                    ]
+                },
+                {
+                    "location": "PmosTransistor-3[gate]",
+                    "neighbors": [
+                        7
+                    ]
+                },
+                {
+                    "location": [
+                        -0.75,
+                        1.0
+                    ],
+                    "neighbors": [
+                        1,
+                        5
+                    ]
+                },
+                {
+                    "location": [
+                        -0.75,
+                        -0.625
+                    ],
+                    "neighbors": [
+                        6,
+                        4
+                    ]
+                },
+                {
+                    "location": [
+                        0.25,
+                        -0.625
+                    ],
+                    "neighbors": [
+                        7,
+                        5
+                    ]
+                },
+                {
+                    "location": [
+                        0.25,
+                        -0.25
+                    ],
+                    "neighbors": [
+                        3,
+                        6
+                    ]
+                },
+                {
+                    "location": [
+                        -1.25,
+                        1.0
+                    ],
+                    "neighbors": [
+                        1,
+                        2
+                    ]
+                }
+            ]
+        },
+        {
+            "nodes": [
+                {
+                    "location": "PmosTransistor-1[drain]",
+                    "neighbors": [
+                        1
+                    ]
+                },
+                {
+                    "location": "PmosTransistor-2[source]",
                     "neighbors": [
                         0
                     ]
