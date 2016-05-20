@@ -518,6 +518,12 @@ class SimpleActions(BaseAction):
         elif event.keyval == ord('='):  # Reset Zoom
             widget.zoom_set(20)
 
+        elif event.keyval == ord('s'):  # Decrease Part Size
+            widget.change_part_scale(0.5)
+
+        elif event.keyval == ord('S'):  # Increase Part Size
+            widget.change_part_scale(2)
+
         elif event.keyval == ord(' '):  # Activate part
             if isinstance(widget.selected, logic.Part):
                 widget.selected.on_activate()
